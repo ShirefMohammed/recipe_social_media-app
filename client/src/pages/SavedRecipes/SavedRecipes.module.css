@@ -1,0 +1,14 @@
+.saved_recipes{
+  width: 100%;
+  max-width: 600px;
+  padding: 20px 15px;
+  margin: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.no_saved_recipes{
+  text-align: center;
+}

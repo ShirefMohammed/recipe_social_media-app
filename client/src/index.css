@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --white: #fff;
+  --main-color: #e56b1f;
+  --very-dark-blue: #1d2025;
+  --dark-grayish-blue: #68707d;
+  --grayish-blue: #979ca5;
+  --light-grayish-blue: #e9ecf7;
+  --common-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .1);
+}
+
+* {
+  border: none;
+  outline: none;
+  scroll-behavior: smooth;
+
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+
+  font-size: 15px;
+  font-weight: 400;
+  font-family: 'Space Mono', monospace;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.app{
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* START COMPONENT */
+.container {
+  padding: 0 15px;
+  margin: auto;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.circle_btn {
+  border: none;
+  outline: none;
+
+  width: 40px;
+  height: 40px;
+
+  background: var(--white);
+  box-shadow: var(--common-box-shadow);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+
+  -webkit-transition: .2s;
+  -moz-transition: .2s;
+  -ms-transition: .2s;
+  -o-transition: .2s;
+  transition: .2s;
+}
+
+.circle_btn:hover {
+  background: var(--light-grayish-blue);
+}
+
+.circle_btn i{
+  transition: .2s;
+  -webkit-transition: .2s;
+  -moz-transition: .2s;
+  -ms-transition: .2s;
+  -o-transition: .2s;
+}
+
+/* END COMPONENT */

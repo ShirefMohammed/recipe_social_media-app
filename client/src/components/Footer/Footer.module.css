@@ -1,0 +1,7 @@
+.footer{
+  min-height: 80px;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
