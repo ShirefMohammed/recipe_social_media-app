@@ -1,18 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { GetUserId, GetServerAPI } from "../../hooks";
+import { GetServerUrl } from "../../hooks";
 import { RecipeCard } from "../../components";
-
+import { appContext } from "../../App";
 import style from "./SavedRecipes.module.css";
 import axios from "axios";
-
-const api = GetServerAPI();
-const userId = GetUserId();
+const serverUrl = GetServerUrl();
 
 const SavedRecipes = () => {
+  const { userId, cookies } = useContext(appContext);
   const [savedRecipes, setSavedRecipes] = useState([]);
-  const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,10 +17,13 @@ const SavedRecipes = () => {
   }, [cookies, navigate]);
 
   useEffect(() => {
-    axios.post(`${api}/recipes/savedRecipes`, {
-      userId: userId
-    }).then(res => setSavedRecipes(res.data.savedRecipes));
-  }, []);
+    const getSavedRecipes = async () => {
+      axios.post(`${serverUrl}/recipes/savedRecipes`, { userId: userId })
+        .then(res => setSavedRecipes(res.data.savedRecipes))
+        .catch(error => console.log(error));
+    }
+    getSavedRecipes();
+  }, [userId]);
 
   return (
     <div className={style.saved_recipes}>

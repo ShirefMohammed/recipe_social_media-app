@@ -1,5 +1,6 @@
-/* Start user_account */
-.user_account {
+/* start user_portfolio */
+.user_portfolio {
+  flex: 1;
   width: 100%;
   max-width: 1000px;
   margin: auto;
@@ -14,21 +15,21 @@
   grid-column: 1 / 4;
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--light-grayish-blue);
-  border-radius: 10px;
+  border: 1px solid var(--light-grayish);
   -webkit-border-radius: 10px;
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
+  border-radius: 10px;
 }
 
-.userAvatar {
+.user_details .user_picture_container {
   position: absolute;
   top: 100px;
   left: 20px;
 }
 
-.userAvatar img {
+.user_details .user_picture_container img {
   width: 150px;
   height: 150px;
   padding: 3px;
@@ -41,13 +42,12 @@
   -o-border-radius: 50%;
 }
 
-.aboutUser {
+.user_details .about_user_container {
   padding: 60px 20px 20px 20px;
 }
 
 .created_recipes {
   grid-column: 1 / 3;
-  grid-area: "created_recipes";
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -62,7 +62,7 @@
 }
 
 @media(max-width: 800px) {
-  .userAvatar {
+  .user_details .user_picture_container {
     left: 50%;
     transform: translateX(-50%);
     -webkit-transform: translateX(-50%);
@@ -71,7 +71,7 @@
     -o-transform: translateX(-50%);
   }
 
-  .about_user {
+  .user_details .about_user_container {
     text-align: center;
   }
 
@@ -88,24 +88,20 @@
   }
 }
 
-.user_not_found {
-  text-align: center;
-}
+/* end user_portfolio */
 
-/* End user_account */
-
-/* Start AccountBg */
-.upload_accountBg {
+/* start account_bg */
+.account_bg {
   position: relative;
 }
 
-.upload_accountBg img {
+.account_bg img {
   width: 100%;
   height: 200px;
   object-fit: cover;
 }
 
-.upload_accountBg .upload_accountBg_btn {
+.account_bg label {
   width: 25px !important;
   height: 25px !important;
   position: absolute;
@@ -113,26 +109,26 @@
   right: 10px;
 }
 
-.upload_accountBg .upload_accountBg_btn i {
+.account_bg label i {
   font-size: 10px;
 }
 
-.upload_accountBg .upload_accountBg_btn:hover i {
+.account_bg label:hover i {
   color: #00f;
 }
 
-.upload_accountBg input[type="file"] {
+.account_bg input[type="file"] {
   display: none;
 }
 
 /* End AccountBg */
 
-/* Start UserAvatar */
-.upload_userAvatar {
+/* start user_picture */
+.user_picture {
   position: relative;
 }
 
-.upload_userAvatar img {
+.user_picture img {
   width: 150px;
   height: 150px;
   padding: 3px;
@@ -146,7 +142,7 @@
   -o-border-radius: 50%;
 }
 
-.upload_userAvatar .upload_userAvatar_btn {
+.user_picture label {
   width: 25px !important;
   height: 25px !important;
   position: absolute;
@@ -154,22 +150,22 @@
   right: 8px;
 }
 
-.upload_userAvatar .upload_userAvatar_btn i {
+.user_picture label i {
   font-size: 10px;
 }
 
-.upload_userAvatar .upload_userAvatar_btn:hover i {
+.user_picture label:hover i {
   color: #00f;
 }
 
-.upload_userAvatar input[type="file"] {
+.user_picture input[type="file"] {
   display: none;
 }
 
-/* End UserAvatar */
+/* end user_picture */
 
-/* Start AboutUser */
-.about_user .username {
+/* start about_user */
+.about_user .name {
   font-size: 23px;
   font-weight: 700;
 }
@@ -181,19 +177,19 @@
 }
 
 .about_user .bio span {
-  font-size: 13px;
+  font-size: 12px;
 }
 
-.about_user .bio .change_bio_btn {
+.about_user .bio>button {
   width: 25px !important;
   height: 25px !important;
 }
 
-.about_user .bio .change_bio_btn i {
+.about_user .bio>button i {
   font-size: 10px;
 }
 
-.about_user .bio .change_bio_btn:hover i {
+.about_user .bio>button:hover i {
   color: #00f;
 }
 
@@ -203,7 +199,53 @@
   }
 }
 
-/* End AboutUser */
+/* end about_user */
+
+/* start settings */
+.account_settings {
+  width: 100%;
+  font-style: italic;
+  padding: 15px;
+  border: 1px solid var(--light-grayish);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+}
+
+.account_settings>div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.account_settings :is(.name, .email) p>span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.account_settings :is(.change_password_btn, .delete_account_btn) {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+.account_settings :is(.change_password_btn i, .delete_account_btn i) {
+  font-size: 10px;
+}
+
+.account_settings .change_password_btn:hover i {
+  color: #00f;
+}
+
+.account_settings .delete_account_btn:hover i {
+  color: #f00;
+}
+
+/* End Settings */
 
 /* Start editor */
 .editor {
@@ -218,7 +260,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .editor .close_editor_btn {
@@ -266,84 +308,12 @@
 }
 
 .editor form button {
-  position: relative;
-  overflow: hidden;
   cursor: pointer;
-  transition: .3s;
-  -webkit-transition: .3s;
-  -moz-transition: .3s;
-  -ms-transition: .3s;
-  -o-transition: .3s;
-}
-
-.editor form button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  z-index: -1;
-  background: var(--main-color);
-  transition: .3s;
-  -webkit-transition: .3s;
-  -moz-transition: .3s;
-  -ms-transition: .3s;
-  -o-transition: .3s;
 }
 
-.editor form button:hover::before {
-  width: 0%;
+.editor form button:hover {
+  color: var(--white);
 }
 
 /* End editor */
-
-/* Start Settings */
-.account_settings {
-  width: 100%;
-  font-style: italic;
-  padding: 15px;
-  border: 1px solid var(--light-grayish-blue);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  border-radius: 6px;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  -ms-border-radius: 6px;
-  -o-border-radius: 6px;
-}
-
-.account_settings>div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.account_settings .password .change_password_btn {
-  width: 25px !important;
-  height: 25px !important;
-}
-
-.account_settings .password .change_password_btn i {
-  font-size: 10px;
-}
-
-.account_settings .password .change_password_btn:hover i {
-  color: #00f;
-}
-
-.account_settings .delete_account .delete_account_btn {
-  width: 25px !important;
-  height: 25px !important;
-}
-
-.account_settings .delete_account .delete_account_btn i {
-  font-size: 10px;
-}
-
-.account_settings .delete_account .delete_account_btn:hover i {
-  color: #f00;
-}
-
-/* End Settings */

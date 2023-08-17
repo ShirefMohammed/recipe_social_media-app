@@ -5,3 +5,16 @@
   align-items: center;
   justify-content: center;
 }
+
+.footer div{
+  display: flex;
+  gap: 5px;
+}
+
+.footer div :is(a, span){
+  font-size: 14px;
+}
+
+.footer div a{
+  text-decoration: underline;
+}

@@ -1,4 +1,4 @@
-const ConvertToBase64 = (imgFile) => {
+export default function ConvertToBase64(imgFile) {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
     fileReader.readAsDataURL(imgFile);
@@ -6,5 +6,3 @@ const ConvertToBase64 = (imgFile) => {
     fileReader.onerror = (error) => reject(error);
   });
 }
-
-export default ConvertToBase64

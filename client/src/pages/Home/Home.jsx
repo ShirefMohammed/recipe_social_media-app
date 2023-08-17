@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { RecipeCard } from "../../components";
-import { GetServerAPI } from "../../hooks";
+import { GetServerUrl } from "../../hooks";
 
 import style from "./Home.module.css";
 import axios from "axios";
 
-const api = GetServerAPI();
+const serverUrl = GetServerUrl();
 
 const Home = () => {
   const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    axios.get(`${api}/recipes`).then(res => setRecipes(res.data.recipes));
+    axios.get(`${serverUrl}/recipes`).then(res => setRecipes(res.data.recipes));
   }, []);
 
   return (

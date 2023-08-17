@@ -1,13 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
 :root {
+  --main-bg: #fff;
   --white: #fff;
+  --black: #000;
   --main-color: #e56b1f;
-  --very-dark-blue: #1d2025;
-  --dark-grayish-blue: #68707d;
-  --grayish-blue: #979ca5;
-  --light-grayish-blue: #e9ecf7;
+  --second-color: #872642;
+  --third-color: #F6C026;
+  --fourth-color: #A0D3F9;
+  --dark-blue: #1d2025;
+  --dark-grayish: #68707d;
+  --medium-grayish: #979ca5;
+  --light-grayish: #e9ecf7;
   --common-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .1);
+  --common-transition: .3s;
 }
 
 * {
@@ -48,41 +54,146 @@ a {
 .circle_btn {
   border: none;
   outline: none;
-
   width: 40px;
   height: 40px;
-
-  background: var(--white);
+  background: var(--main-bg);
   box-shadow: var(--common-box-shadow);
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
   -ms-border-radius: 50%;
   -o-border-radius: 50%;
   border-radius: 50%;
-
-  -webkit-transition: .2s;
-  -moz-transition: .2s;
-  -ms-transition: .2s;
-  -o-transition: .2s;
-  transition: .2s;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
 }
 
 .circle_btn:hover {
-  background: var(--light-grayish-blue);
+  background: var(--light-grayish);
 }
 
 .circle_btn i{
-  transition: .2s;
-  -webkit-transition: .2s;
-  -moz-transition: .2s;
-  -ms-transition: .2s;
-  -o-transition: .2s;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
 }
 
+.first_btn{
+  position: relative;
+  outline: none;
+  border: 1px solid var(--main-color);
+  padding: 10px;
+  width: max-content;
+  color: var(--white);
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.first_btn::before{
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--main-color);
+  z-index: -1;
+    -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.first_btn:hover{
+  color: var(--black);
+}
+
+.first_btn:hover::before{
+  width: 0;
+}
+
+.second_btn{
+  position: relative;
+  outline: none;
+  border: 1px solid var(--main-color);
+  padding: 10px;
+  width: max-content;
+  color: var(--black);
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.second_btn::before{
+  content: "";
+  width: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--main-color);
+  z-index: -1;
+    -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.second_btn:hover{
+  color: var(--white);
+}
+
+.second_btn:hover::before{
+  width: 100%;
+}
+
+.fade_up{
+  -webkit-animation: fade_up .3s ease;
+  animation: fade_up .3s ease;
+}
+
+@keyframes fade_up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    -webkit-transform: translateY(10px);
+    -moz-transform: translateY(10px);
+    -ms-transform: translateY(10px);
+    -o-transform: translateY(10px);
+}
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    -webkit-transform: translateY(0);
+    -moz-transform: translateY(0);
+    -ms-transform: translateY(0);
+    -o-transform: translateY(0);
+  }
+}
 /* END COMPONENT */

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { GetServerAPI } from "../../hooks";
+import { GetServerUrl } from "../../hooks";
 import { RecipeCard } from "../../components";
 
 import style from "./User.module.css";
 import accountBgAlt from "../../assets/accountBgAlt.png";
-import userAvatarAlt from "../../assets/userAvatarAlt.png";
+import userAvatarAlt from "../../assets/userPictureAlt.png";
 import axios from "axios";
 
-const api = GetServerAPI();
+const serverUrl = GetServerUrl();
 
 const User = () => {
   const [user, setUser] = useState({});
@@ -17,9 +17,9 @@ const User = () => {
   const location = useLocation();
 
   useEffect(() => {
-    axios.post(`${api}/users/getUser`, { username: username })
+    axios.post(`${serverUrl}/users/getUser`, { username: username })
       .then(res => setUser(res.data.user));
-    axios.post(`${api}/recipes/createdRecipes`, { username: username })
+    axios.post(`${serverUrl}/recipes/createdRecipes`, { username: username })
       .then(res => setCreatedRecipes(res.data.createdRecipes));
   }, [username, location]);
 

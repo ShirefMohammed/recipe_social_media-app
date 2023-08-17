@@ -1,7 +1,7 @@
 .recipe {
   margin: 20px auto;
   width: calc(100% - 30px);
-  max-width: 600px;
+  max-width: 700px;
 
   padding: 15px;
   border: 1px solid #e9ecf7;
@@ -61,8 +61,13 @@ ol {
   gap: 5px;
 }
 
+ol li {
+  font-size: 14px;
+}
+
 .cooking_time p {
   margin-top: 5px;
+  font-size: 14px;
 }
 
 .save_recipe_btn {

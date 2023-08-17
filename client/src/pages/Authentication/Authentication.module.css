@@ -1,0 +1,106 @@
+/* Start SignUp & SignIn */
+:is(.sign_in, .sign_up) {
+  margin: auto;
+  padding: 50px 15px;
+  width: 100%;
+  max-width: 350px;
+}
+
+:is(.sign_in, .sign_up) h2 {
+  color: var(--main-color);
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+:is(.sign_in, .sign_up) form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+:is(.sign_in, .sign_up) form :is(input, button) {
+  outline: none;
+  background: none;
+  caret-color: var(--main-color);
+  padding: 12px 12px 12px 15px;
+  border: 1px solid var(--main-color);
+  border-radius: 6px;
+  -o-border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+}
+
+:is(.sign_in, .sign_up) form button {
+  cursor: pointer;
+  width: 100%;
+}
+
+.sign_up form .password_strength {
+  display: flex;
+  flex-direction: column;
+}
+
+.sign_up form .password_strength li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sign_up form .password_strength li :is(i, span) {
+  font-size: 12px;
+}
+
+.sign_up form .password_strength li i.Xmark {
+  color: #f00;
+}
+
+.sign_up form .password_strength li i.check {
+  color: #0f0;
+}
+
+:is(.sign_in, .sign_up) .border_or {
+  margin: 20px -0;
+  text-align: center;
+  position: relative;
+}
+
+:is(.sign_in, .sign_up) .border_or::before {
+  content: "";
+  width: 100px;
+  height: 1px;
+  position: absolute;
+  left: 175px;
+  top: 13px;
+  background: var(--dark-grayish);
+}
+
+:is(.sign_in, .sign_up) .border_or::after {
+  content: "";
+  width: 100px;
+  height: 1px;
+  position: absolute;
+  left: 42px;
+  top: 13px;
+  background: var(--dark-grayish);
+}
+
+:is(.sign_in, .sign_up) .google_sign_btn {
+  margin: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  transition: var(--common-transition);
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+}
+
+:is(.sign_in, .sign_up) .google_sign_btn:hover {
+  background: #F5FBFF !important;
+}
+
+/* End SignUp & SignIn */

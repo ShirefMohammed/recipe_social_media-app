@@ -1,47 +1,67 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { GetServerAPI, GetUserId } from "../../hooks";
-
+import { GetServerUrl } from "../../hooks";
+import { toast } from "react-toastify";
+import { appContext } from "../../App";
 import style from "./Recipe.module.css";
-import userAvatarAlt from "../../assets/userAvatarAlt.png";
+import userPictureAlt from "../../assets/userPictureAlt.png";
 import axios from "axios";
-
-const api = GetServerAPI();
-const userId = GetUserId();
+const serverUrl = GetServerUrl();
 
 const Recipe = () => {
+  const { cookies, userId } = useContext(appContext);
+  const { recipeId } = useParams();
   const [recipe, setRecipe] = useState({});
   const [publisher, setPublisher] = useState({});
-  const [cookies] = useCookies();
-  const { recipeId } = useParams();
 
-  // SetRecipe && SetPublisher
   useEffect(() => {
-    axios.get(`${api}/recipes/recipeId/${recipeId}`)
-      .then(res => setRecipe(res.data.recipe));
-    axios.post(`${api}/users/getUser`, { userId: recipe.userOwner })
-      .then(res => setPublisher(res.data.user));
-  }, [recipeId, recipe.userOwner]);
+    const getRecipe = async () => {
+      axios.get(`${serverUrl}/recipes/recipeId/${recipeId}`)
+        .then(res => setRecipe(res.data.recipe))
+        .catch(error => console.log(error));
+    }
+    getRecipe();
+  }, [recipeId]);
+
+  useEffect(() => {
+    const getPublisher = async () => {
+      if (!recipe?._id) return;
+      axios.get(`${serverUrl}/users/getUser/userId/${recipe.owner}`)
+        .then(res => setPublisher(res.data.user));
+    }
+    getPublisher();
+  }, [userId, recipe]);
 
   // Save Recipe
-  const saveRecipe = () => {
-    axios.post(`${api}/recipes/saveRecipe`, {
+  const saveRecipe = async () => {
+    axios.post(`${serverUrl}/recipes/saveRecipe`, {
       userId: userId,
       recipeId: recipe._id
-    }).then(res => alert(res.data.message));
+    }).then(res => {
+      toast.success(res.data.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    })
+      .catch(error => console.log(error));
   }
 
   return (
     <section className={style.recipe}>
       {/* Publisher Account and Name */}
       <div className={style.publisher}>
-        <Link to={`/users/${publisher?.username}`}>
+        <Link to={`/users/${publisher?._id}`}>
           <img
-            src={publisher?.userAvatar || userAvatarAlt}
-            alt="Publisher Img" />
+            src={publisher?.picture || userPictureAlt}
+            alt="publisher picture" />
         </Link>
-        <span> {publisher?.username || "Publisher Name"} </span>
+        <span> {publisher?.name || "publisher name"} </span>
       </div>
 
       {/* Recipe Image */}
@@ -51,14 +71,14 @@ const Recipe = () => {
 
       {/* Recipe Name */}
       <h3 className={style.recipe_name}>
-        {recipe.name}
+        {recipe.title}
       </h3>
 
       {/* Recipe Ingredients */}
       <div className={style.ingredients}>
         <h3>Recipe Ingredients</h3>
         <ol>
-          {recipe?.ingredients?.split("\\n").map((ingredient, index) => {
+          {recipe?.ingredients?.map((ingredient, index) => {
             return ingredient && <li key={index}>{ingredient}</li>;
           })}
         </ol>
@@ -68,7 +88,7 @@ const Recipe = () => {
       <div className={style.instructions}>
         <h3>Recipe Instructions</h3>
         <ol>
-          {recipe?.instructions?.split("\\n").map((instruction, index) => {
+          {recipe?.instructions?.map((instruction, index) => {
             return instruction && <li key={index}>{instruction}</li>;
           })}
         </ol>
@@ -84,7 +104,8 @@ const Recipe = () => {
       {cookies.access_token &&
         <button
           className={style.save_recipe_btn}
-          onClick={saveRecipe}>
+          onClick={saveRecipe}
+        >
           Save Recipe
           <i className="fa-regular fa-heart"></i>
         </button>}

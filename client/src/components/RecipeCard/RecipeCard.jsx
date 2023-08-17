@@ -1,85 +1,153 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { GetServerAPI, GetUserId } from "../../hooks";
-
+import { toast } from "react-toastify";
+import { GetServerUrl } from "../../hooks";
+import { appContext } from "../../App";
 import style from "./RecipeCard.module.css";
-import userAvatarAlt from "../../assets/userAvatarAlt.png";
 import axios from "axios";
+import userPictureAlt from "../../assets/userPictureAlt.png";
+const serverUrl = GetServerUrl();
 
-const api = GetServerAPI();
-const userId = GetUserId();
-
-const RecipeCard = ({ recipe, setSavedRecipes }) => {
+const RecipeCard = ({ recipe, setSavedRecipes, setCreatedRecipes }) => {
+  const { userId, cookies } = useContext(appContext);
   const [publisher, setPublisher] = useState({});
-  const [cookies] = useCookies(["access_token"]);
   const { pathname } = useLocation();
 
-  // Get User Who Published Recipe Post
   useEffect(() => {
-    axios.post(`${api}/users/getUser/`, { userId: recipe.userOwner })
-      .then(res => setPublisher(res.data.user));
-  }, [recipe.userOwner]);
+    const getPublisher = async () => {
+      axios.get(`${serverUrl}/users/getUser/userId/${recipe.owner}`)
+        .then(res => setPublisher(res.data.user));
+    }
+    getPublisher();
+  }, [recipe]);
 
-  // Save Recipe Function
-  const saveRecipe = () => {
-    axios.post(`${api}/recipes/saveRecipe`, {
-      userId: userId,
-      recipeId: recipe._id
-    }).then(res => alert(res.data.message));
+  const saveRecipe = async () => {
+    try {
+      axios.post(`${serverUrl}/recipes/saveRecipe`, {
+        userId: userId,
+        recipeId: recipe._id
+      }).then(res => {
+        toast.success(res.data.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  // Remove Saved Recipe Function
-  const UnSavedRecipe = () => {
-    axios.post(`${api}/recipes/unSavedRecipe`, {
-      userId: userId,
-      recipeId: recipe._id
-    }).then(res => setSavedRecipes(res.data.savedRecipes));
+  const unSaveRecipe = async () => {
+    try {
+      axios.post(`${serverUrl}/recipes/unSaveRecipe`, {
+        userId: userId,
+        recipeId: recipe._id
+      }).then(res => {
+        const { message, savedRecipes } = res.data;
+        setSavedRecipes(savedRecipes);
+        toast.success(message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const removeCreatedRecipe = async () => {
+    try {
+      axios.post(`${serverUrl}/recipes/removeCreatedRecipe`, {
+        userId: userId,
+        recipeId: recipe._id
+      }).then(res => {
+        const { message, createdRecipes } = res.data;
+        setCreatedRecipes(createdRecipes);
+        toast.success(message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
-    <div className={style.recipe}>
-      {/* Publisher */}
+    <div className={style.recipe_card}>
+      {/* Top */}
       <div className={style.publisher}>
-        <Link to={`/users/${publisher?.username}`}>
-          <img
-            src={publisher?.userAvatar || userAvatarAlt}
-            alt="Publisher Img" />
+        <Link to={`/users/${publisher?._id}`}>
+          <img src={publisher?.picture || userPictureAlt} alt="" />
         </Link>
         <span>
-          {publisher?.username || "Publisher Name"}
+          {publisher?.name || "Publisher Name"}
         </span>
       </div>
 
-      {/* Recipe Image Link */}
-      <Link to={`/recipes/recipeId/${recipe._id}`} className={style.recipeImg}>
+      {/* Middle */}
+      <Link to={`/recipes/${recipe._id}`} className={style.recipe_img}>
         <img src={recipe.imageUrl} alt="recipe imageUrl" />
       </Link>
 
-      {/* Recipe Name and Save and UnSave Recipe Buttons */}
-      <div>
+      {/* Bottom */}
+      <div className={style.bottom_div}>
         <h3 className={style.recipe_name}>
-          {recipe.name}
+          {recipe.title}
         </h3>
 
-        {cookies.access_token && pathname !== "/recipes/savedRecipes" ?
-          <button
+        {
+          cookies.access_token
+          && pathname !== "/userPortfolio"
+          && pathname !== "/recipes/savedRecipes"
+          && <button
             className={style.save_recipe_btn}
             title="save recipe"
             onClick={saveRecipe} >
             <i className="fa-regular fa-heart"></i>
           </button>
-          : ""}
+        }
 
-        {cookies.access_token && pathname === "/recipes/savedRecipes" ?
-          <button
-            className={style.un_saved_recipe_btn}
-            title="remove from saved recipes"
-            onClick={UnSavedRecipe} >
-            <i className="fa-solid fa-trash-can"></i>
+        {
+          cookies.access_token
+          && pathname === "/recipes/savedRecipes"
+          && <button
+            className={style.save_recipe_btn}
+            title="unSave recipe"
+            onClick={unSaveRecipe} >
+            <i className={`fa-solid fa-heart ${style.solid_heart}`}></i>
           </button>
-          : ""}
+        }
+
+        {
+          cookies.access_token
+          && pathname === "/userPortfolio"
+          && <button
+            className={style.save_recipe_btn}
+            title="remove created recipe"
+            onClick={removeCreatedRecipe} >
+            <i className="fa-solid fa-trash"></i>
+          </button>
+        }
       </div>
     </div>
   )

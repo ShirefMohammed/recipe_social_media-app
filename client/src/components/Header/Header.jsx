@@ -1,150 +1,132 @@
-import { useRef, useState, useEffect, useContext, createContext } from "react";
+/* eslint-disable react/prop-types */
+import { useRef, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { GetServerAPI, GetUserId } from "../../hooks";
-
+import { appContext } from "../../App";
 import style from "./Header.module.css";
 import LogoIcon from "../../assets/LogoIcon.png";
-import userAvatarAlt from "../../assets/userAvatarAlt.png";
-import axios from "axios";
-
-const userContext = createContext();
-const api = GetServerAPI();
-const userId = GetUserId();
+import userPictureAlt from "../../assets/userPictureAlt.png";
 
 const Header = () => {
   const bars = useRef();
-  const xMark = useRef();
-  const headerLinks = useRef();
+  const XMark = useRef();
+  const Search = useRef();
+  const [openOptions, setOpenOptions] = useState(false);
 
-  const [UserList, setUserList] = useState(false);
-  const [cookies,] = useCookies(["access_token"]);
-  const [userAvatar, setUserAvatar] = useState();
+  const { user, cookies } = useContext(appContext);
+
   const [searchKey, setSearchKey] = useState();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    cookies.access_token &&
-      axios.post(`${api}/users/getUser`, { userId: userId })
-        .then(res => setUserAvatar(res.data.user.userAvatar));
-  }, [cookies]);
-
-  // toggleLinks() for links_toggle_btn to close and open user list
-  const toggleLinks = () => {
-    bars.current.classList.toggle(style.display_none);
-    xMark.current.classList.toggle(style.display_none);
-    headerLinks.current.classList.toggle(style.close_links_sm);
+  // Toggle sideBar
+  const toggleSideBar = () => {
+    bars.current.classList.toggle(style.d_none);
+    XMark.current.classList.toggle(style.d_none);
+    Search.current.classList.toggle(style.close_search_sm);
+    setOpenOptions(false);
   }
 
-  // closeAll() to close all opened lists or links in header
-  const closeAll = () => {
-    bars.current.classList.remove(style.display_none);
-    xMark.current.classList.add(style.display_none);
-    headerLinks.current.classList.add(style.close_links_sm);
-    setUserList(false);
+  // closeAll Opened Taps
+  const closeAllTaps = () => {
+    bars.current.classList.remove(style.d_none);
+    XMark.current.classList.add(style.d_none);
+    Search.current.classList.add(style.close_search_sm);
+    setOpenOptions(false);
   }
 
+  // Navigate To User Page With searchKey
   const SearchUser = (e) => {
     e.preventDefault();
     navigate(`/users/${searchKey}`);
-    Array.from(e.target.elements).map(element => element.value = "");
+    closeAllTaps();
+    setSearchKey("");
   }
 
   return (
     <header className={style.header}>
       <div className={`${style.content} container`}>
-
         {/* left side */}
-        <div className={style.left_side}>
+        <div className={style.left_side}
+          style={!cookies.access_token ? { gap: "20px" } : {}}
+        >
           {/* toggle button */}
           <button
-            className={`${style.links_toggle_btn} circle_btn`}
-            onClick={toggleLinks}>
-            <i
-              className={`fa-solid fa-bars ${style.bars}`}
-              ref={bars}>
-            </i>
-            <i
-              className={`fa-solid fa-xmark ${style.xMark} 
-              ${style.display_none}`}
-              ref={xMark}>
-            </i>
+            className={`${style.sideBar_btn} circle_btn`}
+            onClick={toggleSideBar}>
+            <i className={`fa-solid fa-bars ${style.bars}`} ref={bars}></i>
+            <i className={`fa-solid fa-xmark ${style.XMark} ${style.d_none}`}
+              ref={XMark}></i>
           </button>
 
           {/* logo link */}
-          <Link
-            to='/'
-            onClick={closeAll}>
+          <Link to='/' onClick={closeAllTaps}>
             <img className={style.logo} src={LogoIcon} alt="Logo" />
           </Link>
 
-          {/* links */}
-          <nav>
-            <ul
-              className={`${style.links} ${style.close_links_sm}`}
-              ref={headerLinks}>
-              <form onSubmit={SearchUser} className={style.search_user}>
-                <input
-                  type="text"
-                  placeholder="search about user"
-                  onChange={e => setSearchKey(e.target.value)}
-                  required />
-                <button type="submit" className={`circle_btn`}>
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                </button>
-              </form>
-            </ul>
-          </nav>
+          {/* Search Form */}
+          <div className={`${style.search} ${style.close_search_sm}`}
+            ref={Search}>
+            <form onSubmit={SearchUser}>
+              <input
+                required
+                type="text"
+                placeholder="search about user"
+                value={searchKey}
+                onChange={e => setSearchKey(e.target.value)}
+              />
+              <button type="submit" className="circle_btn">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* right side */}
         <div className={style.right_side}>
-          {/* user button and its list */}
-          <div className={style.user}>
-            <button
-              className={`${style.userAvatar_btn} circle_btn`}
-              onClick={() => setUserList(prev => !prev)}>
-              <img src={userAvatar || userAvatarAlt} alt="userAvatar" />
-            </button>
-            {/* userContext to provide lists with closeAll() function */}
-            <userContext.Provider value={closeAll}>
-              {UserList ?
-                <div className={style.user_list_container}>
-                  {cookies.access_token ?
-                    <ListAfterSignIn />
-                    : <ListBeforeSignIn />}
-                </div>
-                : ""}
-            </userContext.Provider>
-          </div>
+          {
+            cookies.access_token ?
+              // If cookies.access_token return options
+              <div className={style.options}>
+                <button
+                  className={`${style.options_btn} circle_btn`}
+                  onClick={() => setOpenOptions(prev => !prev)}>
+                  <img
+                    src={user?.picture || userPictureAlt}
+                    alt="user Picture" />
+                </button>
+                {
+                  openOptions &&
+                  <div className={style.options_container}>
+                    <OptionsList closeAllTaps={closeAllTaps} />
+                  </div>
+                }
+              </div>
+              // else return signIn or signUp
+              : <SignLinks closeAllTaps={closeAllTaps} />
+          }
         </div>
-
       </div>
     </header>
   )
 }
 
-// User List Before Sign In
-const ListBeforeSignIn = () => {
-  const closeAll = useContext(userContext);
-
+const SignLinks = ({ closeAllTaps }) => {
   return (
     <nav>
-      <ul className={style.ListBeforeSignIn}>
+      <ul className={style.sign_links}>
         <li>
           <Link
-            to="/sign/signUp"
-            onClick={closeAll}>
-            Sign Up
-            <i className="fa-solid fa-right-to-bracket"></i>
+            to="/authentication/signIn"
+            className="second_btn"
+            onClick={closeAllTaps}>
+            SignIn
           </Link>
         </li>
         <li>
           <Link
-            to="/sign/signIn"
-            onClick={closeAll}>
-            Sign In
-            <i className="fa-solid fa-right-to-bracket"></i>
+            to="/authentication/signUp"
+            className="first_btn"
+            onClick={closeAllTaps}>
+            SignUp
           </Link>
         </li>
       </ul>
@@ -152,24 +134,21 @@ const ListBeforeSignIn = () => {
   )
 }
 
-// User List After Sign In
-const ListAfterSignIn = () => {
-  const closeAll = useContext(userContext);
-  const [, setCookies] = useCookies(["access_token"]);
+const OptionsList = ({ closeAllTaps }) => {
+  const { setCookies } = useContext(appContext);
 
   const logOut = () => {
     setCookies("access_token", "");
-    window.localStorage.removeItem("userId");
-    window.location.href = "/sign/signIn";
+    localStorage.setItem("userId", "");
   }
 
   return (
     <nav>
-      <ul className={style.ListAfterSignIn} >
+      <ul className={`${style.options_list} fade_up`} >
         <li>
           <Link
             to="/userPortfolio"
-            onClick={closeAll}>
+            onClick={closeAllTaps}>
             Your Portfolio
             <i className="fa-solid fa-gear"></i>
           </Link>
@@ -177,7 +156,7 @@ const ListAfterSignIn = () => {
         <li>
           <Link
             to='/recipes/createRecipe'
-            onClick={closeAll}>
+            onClick={closeAllTaps}>
             Create Recipe
             <i className="fa-solid fa-circle-plus"></i>
           </Link>
@@ -185,14 +164,14 @@ const ListAfterSignIn = () => {
         <li>
           <Link
             to='/recipes/savedRecipes'
-            onClick={closeAll}>
+            onClick={closeAllTaps}>
             Saved Recipes
             <i className="fa-solid fa-cloud"></i>
           </Link>
         </li>
         <li>
           <span onClick={() => {
-            closeAll();
+            closeAllTaps();
             logOut();
           }}>
             Log Out

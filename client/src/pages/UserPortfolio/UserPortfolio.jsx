@@ -1,177 +1,179 @@
-import { useState, useEffect, createContext, useContext } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
-import { ConvertToBase64, GetServerAPI, GetUserId } from "../../hooks";
+import { ConvertToBase64, GetServerUrl } from "../../hooks";
 import { RecipeCard } from "../../components";
+import { appContext } from "../../App";
 
 import style from "./UserPortfolio.module.css";
-import accountBgAlt from "../../assets/accountBgAlt.png";
-import userAvatarAlt from "../../assets/userAvatarAlt.png";
 import axios from "axios";
+import { toast } from "react-toastify";
 
-const api = GetServerAPI();
-const userId = GetUserId();
-const userContext = createContext();
+const serverUrl = GetServerUrl();
 
-// User Account Or User Portfolio
 const UserPortfolio = () => {
-  const [user, setUser] = useState({});
+  const { userId, cookies } = useContext(appContext);
   const [createdRecipes, setCreatedRecipes] = useState([]);
-  const [cookies] = useCookies(["access_token"]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    !cookies.access_token ? navigate("*")
-      : (axios.post(`${api}/users/getUser/`, { userId: userId })
-        .then(res => setUser(res.data.user)),
-        axios.post(`${api}/recipes/createdRecipes`, { userId: userId })
-          .then(res => setCreatedRecipes(res.data.createdRecipes)));
+    if (!cookies.access_token) {
+      navigate("*");
+    }
   }, [cookies, navigate]);
 
+  useEffect(() => {
+    const getDate = async () => {
+      if (!userId) return;
+      axios.post(`${serverUrl}/recipes/createdRecipes`, { userId: userId })
+        .then((res) => setCreatedRecipes(res.data.createdRecipes))
+        .catch((error) => console.log(error));
+    };
+    getDate();
+  }, [userId]);
+
   return (
-    <>
-      <section className={style.user_account}>
-        {/* User Details Section */}
-        <section className={style.user_details}>
-          <userContext.Provider value={{ user, setUser }}>
-            <div className={style.accountBg}>
-              <AccountBg />
-            </div>
+    <section className={style.user_portfolio}>
+      {/* User Details Section */}
+      <div className={style.user_details}>
+        <div className={style.account_bg_container}>
+          <AccountBg />
+        </div>
+        <div className={style.user_picture_container}>
+          <UserPicture />
+        </div>
+        <div className={style.about_user_container}>
+          <AboutUser />
+        </div>
+      </div>
 
-            <div className={style.userAvatar}>
-              <UserAvatar />
-            </div>
+      {/* Created Recipes */}
+      <div className={style.created_recipes}>
+        {createdRecipes.length > 0
+          ? createdRecipes.map((recipe) =>
+            <RecipeCard
+              key={recipe._id}
+              recipe={recipe}
+              setCreatedRecipes={setCreatedRecipes}
+            />
+          ) : ""}
+      </div>
 
-            <div className={style.aboutUser}>
-              <AboutUser />
-            </div>
-          </userContext.Provider>
+      {/* Right Column */}
+      <div className={style.right_column}>
+        {/* Settings */}
+        <section className={style.settings}>
+          <Settings />
         </section>
-
-        {/* Created Recipes */}
-        <section className={style.created_recipes}>
-          {createdRecipes.length > 0 ? createdRecipes.map(recipe =>
-            <RecipeCard key={recipe._id} recipe={recipe} />)
-            : ""}
-        </section>
-
-        {/* Right Column */}
-        <section className={style.right_column}>
-          {/* Settings */}
-          <section className={style.settings}>
-            <userContext.Provider value={{ user, setUser }}>
-              <Settings />
-            </userContext.Provider>
-          </section>
-
-          {/* Suggested Users To Follow */}
-          <section className={style.suggested_users}>
-          </section>
-        </section>
-      </section>
-
-    </>
-  )
-}
+        {/* Suggested Users To Follow */}
+        <div className={style.suggested_users}></div>
+      </div>
+    </section>
+  );
+};
 
 const AccountBg = () => {
-  const { user, setUser } = useContext(userContext);
+  const { userId, user, setUser } = useContext(appContext);
 
-  // uploadImage Function
   const uploadAccountBg = async ({ target }) => {
-    const imgFile = target.files[0];
-    const base64Img = await ConvertToBase64(imgFile);
-    axios.post(`${api}/users/userPortfolio/updateAccount`, {
-      userId: userId,
-      accountBg: base64Img
-    }).then(res => setUser(res.data.user));
-  }
+    const accountBgFile = target.files[0];
+    const base64Img = await ConvertToBase64(accountBgFile);
+    axios
+      .post(`${serverUrl}/users/userPortfolio/updateAccount`, {
+        userId: userId,
+        accountBg: base64Img,
+      })
+      .then((res) => setUser(res.data.user))
+      .catch((error) => console.log(error));
+  };
 
   return (
-    <div className={style.upload_accountBg}>
-      <img
-        src={user.accountBg || accountBgAlt}
-        alt="accountBg" />
-      <label
-        htmlFor="accountBgFile"
-        className={`${style.upload_accountBg_btn} circle_btn`}>
+    <div className={style.account_bg}>
+      <img src={user.accountBg} alt="accountBg" />
+
+      <label htmlFor="accountBgFile" className="circle_btn">
         <i className="fa-solid fa-pen"></i>
       </label>
+
       <input
         type="file"
         id="accountBgFile"
         accept=".jpeg, .jpg,.png"
-        onChange={uploadAccountBg} />
+        onChange={uploadAccountBg}
+      />
     </div>
-  )
-}
+  );
+};
 
-const UserAvatar = () => {
-  const { user, setUser } = useContext(userContext);
+const UserPicture = () => {
+  const { userId, user, setUser } = useContext(appContext);
 
-  // uploadImage Function
-  const uploadUserAvatar = async ({ target }) => {
-    const imgFile = target.files[0];
-    const base64Img = await ConvertToBase64(imgFile);
-    axios.post(`${api}/users/userPortfolio/updateAccount`, {
-      userId: userId,
-      userAvatar: base64Img
-    }).then(res => setUser(res.data.user));
-  }
+  const uploadUserPicture = async ({ target }) => {
+    const userPictureFile = target.files[0];
+    const base64Img = await ConvertToBase64(userPictureFile);
+    axios
+      .post(`${serverUrl}/users/userPortfolio/updateAccount`, {
+        userId: userId,
+        picture: base64Img,
+      })
+      .then((res) => setUser(res.data.user))
+      .catch((error) => console.log(error));
+  };
 
   return (
-    <div className={style.upload_userAvatar}>
-      <img
-        src={user.userAvatar || userAvatarAlt}
-        alt="userAvatar" />
-      <label
-        htmlFor="userAvatarFile"
-        className={`${style.upload_userAvatar_btn} circle_btn`}>
+    <div className={style.user_picture}>
+      <img src={user.picture} alt="user picture" />
+
+      <label htmlFor="userPictureFile" className="circle_btn">
         <i className="fa-solid fa-pen"></i>
       </label>
+
       <input
         type="file"
-        id="userAvatarFile"
+        id="userPictureFile"
         accept=".jpeg, .jpg,.png"
-        onChange={uploadUserAvatar} />
+        onChange={uploadUserPicture}
+      />
     </div>
-  )
-}
+  );
+};
 
 const AboutUser = () => {
-  const { user, setUser } = useContext(userContext);
+  const { userId, user, setUser } = useContext(appContext);
   const [bioEditor, setBioEditor] = useState(false);
   const [bio, setBio] = useState();
 
-  const ChangeBio = (e) => {
+  const ChangeBio = async (e) => {
     e.preventDefault();
 
-    axios.post(`${api}/users/userPortfolio/updateAccount`, {
-      userId: userId,
-      bio: bio
-    }).then(res => setUser(res.data.user));
+    axios
+      .post(`${serverUrl}/users/userPortfolio/updateAccount`, {
+        userId: userId,
+        bio: bio,
+      })
+      .then((res) => setUser(res.data.user))
+      .catch((error) => console.log(error));
 
     setBioEditor(false);
-  }
+  };
 
   return (
     <div className={style.about_user}>
-      <h2 className={style.username}>{user.username}</h2>
+      <h2 className={style.name}>{user.name}</h2>
 
       <div className={style.bio}>
-        <span>{user.bio || "Account Has No Bio"}</span>
+        <span>{user.bio || "account has no bio"}</span>
 
-        <button
-          className={`${style.change_bio_btn} circle_btn`}
-          onClick={() => setBioEditor(true)}>
+        <button className="circle_btn" onClick={() => setBioEditor(true)}>
           <i className="fa-solid fa-pen"></i>
         </button>
 
-        {bioEditor ?
+        {bioEditor ? (
           <div className={style.editor}>
             <button
               className={`${style.close_editor_btn} circle_btn`}
-              onClick={() => setBioEditor(false)}>
+              onClick={() => setBioEditor(false)}
+            >
               <i className="fa-solid fa-xmark"></i>
             </button>
 
@@ -181,75 +183,147 @@ const AboutUser = () => {
               <input
                 type="text"
                 placeholder="Enter Bio"
-                onChange={e => setBio(e.target.value)}
-                required />
+                onChange={(e) => setBio(e.target.value)}
+                required
+              />
 
-              <button type="submit">Change Password</button>
+              <button type="submit" className="first_btn">
+                Change Bio
+              </button>
             </form>
           </div>
-          : ""}
+        ) : (
+          ""
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 const Settings = () => {
-  const { user } = useContext(userContext);
+  const { userId, user, setCookies } = useContext(appContext);
   const [passEditor, setPassEditor] = useState(false);
   const [passFormInputs, setPassFormInputs] = useState({});
   const [deleteEditor, setDeleteEditor] = useState(false);
-  const [accountPassword, setAccountPassword] = useState();
-  const [, setCookies] = useCookies(["access_token"]);
+  const [accountPassword, setAccountPassword] = useState("");
+  const navigate = useNavigate();
 
   // Handle Old Password And New Password Inputs Change
-  const handlePassChange = ({ target }) => {
-    setPassFormInputs(prev => ({ ...prev, [target.name]: target.value }));
-  }
+  const handlePassChange = (e) => {
+    setPassFormInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   // Change Password When Submit Form
-  const ChangePassword = (e) => {
+  const changePassword = async (e) => {
     e.preventDefault();
 
     const { oldPassword, newPassword } = passFormInputs;
 
-    oldPassword === newPassword ?
-      window.alert("New Password Must be Different Than Old Password")
-      : axios.post(`${api}/users/userPortfolio/updateAccount`, {
-        userId: userId,
-        oldPassword: oldPassword,
-        newPassword: newPassword
-      }).then(res => alert(res.data.message));
+    if (oldPassword === newPassword) {
+      toast.error("enter strong password", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } else {
+      axios
+        .post(`${serverUrl}/users/userPortfolio/updateAccount`, {
+          userId: userId,
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+        })
+        .then((res) => {
+          const { changed, message } = res.data;
+          changed
+            ? toast.success(message, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            })
+            : toast.error(message, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+            });
+        })
+        .catch((error) => console.log(error));
 
-    setPassEditor(false);
-  }
+      setPassEditor(false);
+    }
+  };
 
-  // Delete User Account 
-  const deleteAccount = (e) => {
+  // Delete User Account
+  const deleteAccount = async (e) => {
     e.preventDefault();
 
-    axios.post(`${api}/users/userPortfolio/deleteAccount`, {
-      userId: userId,
-      password: accountPassword
-    }).then(res => {
-      const { accountDeleted, message } = res.data;
-      !accountDeleted ? alert(message) : (logOut(), alert(message));
-    });
+    axios
+      .post(`${serverUrl}/users/userPortfolio/deleteAccount`, {
+        userId: userId,
+        password: accountPassword,
+      })
+      .then((res) => {
+        const { deleted, message } = res.data;
+        if (deleted) {
+          setCookies("access_token", "");
+          localStorage.removeItem("userId");
+          navigate("/");
+          toast.success(message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+        } else {
+          toast.error(message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+          });
+        }
+      })
+      .catch((error) => console.log(error));
 
     setDeleteEditor(false);
   };
 
-  // Log Out When Deleting User Account
-  const logOut = () => {
-    setCookies("access_token", "");
-    window.localStorage.removeItem("userId");
-    window.location.href = "/sign/signUp";
-  }
-
   return (
     <div className={style.account_settings}>
-      {/* Username */}
-      <div className={style.username}>
-        <p>Username: {user.username}</p>
+      {/* name */}
+      <div className={style.name}>
+        <p>
+          name: <span>{user.name}</span>
+        </p>
+      </div>
+
+      {/* email */}
+      <div className={style.email}>
+        <p>
+          email: <span>{user.email}</span>
+        </p>
       </div>
 
       {/* Change Password */}
@@ -258,36 +332,47 @@ const Settings = () => {
 
         <button
           className={`${style.change_password_btn} circle_btn`}
-          onClick={() => setPassEditor(true)}>
+          onClick={() => setPassEditor(true)}
+        >
           <i className="fa-solid fa-pen"></i>
         </button>
 
-        {passEditor ?
+        {passEditor ? (
           <div className={style.editor}>
             <button
               className={`${style.close_editor_btn} circle_btn`}
-              onClick={() => setPassEditor(false)}>
+              onClick={() => setPassEditor(false)}
+            >
               <i className="fa-solid fa-xmark"></i>
             </button>
 
-            <form onSubmit={ChangePassword}>
+            <form onSubmit={changePassword}>
               <h2>Change Password</h2>
+
               <input
                 type="password"
                 name="oldPassword"
                 placeholder="Old Password"
                 onChange={handlePassChange}
-                required />
+                required
+              />
+
               <input
                 type="password"
                 name="newPassword"
                 placeholder="New Password"
                 onChange={handlePassChange}
-                required />
-              <button type="submit">Change Password</button>
+                required
+              />
+
+              <button type="submit" className="first_btn">
+                Change Password
+              </button>
             </form>
           </div>
-          : ""}
+        ) : (
+          ""
+        )}
       </div>
 
       {/* Delete Account */}
@@ -296,33 +381,42 @@ const Settings = () => {
 
         <button
           className={`${style.delete_account_btn} circle_btn`}
-          onClick={() => setDeleteEditor(true)}>
+          onClick={() => setDeleteEditor(true)}
+        >
           <i className="fa-solid fa-trash-can"></i>
         </button>
 
-        {deleteEditor ?
+        {deleteEditor ? (
           <div className={style.editor}>
             <button
               className={`${style.close_editor_btn} circle_btn`}
-              onClick={() => setDeleteEditor(false)}>
+              onClick={() => setDeleteEditor(false)}
+            >
               <i className="fa-solid fa-xmark"></i>
             </button>
 
             <form onSubmit={deleteAccount}>
               <h2>Delete Account</h2>
+
               <input
                 type="password"
                 name="accountPassword"
                 placeholder="Enter Your Password"
-                onChange={e => setAccountPassword(e.target.value)}
-                required />
-              <button type="submit">Delete Account</button>
+                onChange={(e) => setAccountPassword(e.target.value)}
+                required
+              />
+
+              <button type="submit" className="first_btn">
+                Delete Account
+              </button>
             </form>
           </div>
-          : ""}
+        ) : (
+          ""
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UserPortfolio
+export default UserPortfolio;
