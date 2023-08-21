@@ -1,21 +1,19 @@
 const express = require("express");
 const {
-  getAllRecipes, getRecipeById, getSavedRecipes, getCreatedRecipes,
-  createNewRecipe, saveRecipe, unSaveRecipe, removeCreatedRecipe
+  getRecipes,
+  getRecipeById,
+  createNewRecipe,
+  saveRecipe,
+  unSaveRecipe,
+  removeCreatedRecipe
 } = require("../controllers/recipesController");
 const router = express.Router();
 
 // Get all recipes
-router.route("/").get(getAllRecipes);
+router.route("/").get(getRecipes);
 
 // Get recipe by id
 router.route("/recipeId/:recipeId").get(getRecipeById);
-
-// Get saved recipes
-router.route("/savedRecipes").post(getSavedRecipes);
-
-// Get created recipes by userId or email
-router.route("/createdRecipes/").post(getCreatedRecipes);
 
 // Create new recipe
 router.route("/createNewRecipe").post(createNewRecipe);

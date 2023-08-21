@@ -6,7 +6,7 @@ const RecipeSchema = new Schema({
   instructions: [{ type: String, required: true }],
   imageUrl: { type: String, required: true },
   cookingTime: { type: String, required: true },
-  owner: { type: Schema.Types.ObjectId, required: true }
+  owner: { type: Schema.Types.ObjectId, ref: "users", required: true }
 });
 
 const RecipeModel = model("recipes", RecipeSchema);

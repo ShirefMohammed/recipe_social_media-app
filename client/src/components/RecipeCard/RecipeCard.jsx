@@ -1,106 +1,37 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { toast } from "react-toastify";
+import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import { GetServerUrl } from "../../hooks";
 import { appContext } from "../../App";
+import { portfolioContext } from "../../pages/UserPortfolio/UserPortfolio";
+import { RotatingLines } from "react-loader-spinner";
 import style from "./RecipeCard.module.css";
 import axios from "axios";
 import userPictureAlt from "../../assets/userPictureAlt.png";
 const serverUrl = GetServerUrl();
 
-const RecipeCard = ({ recipe, setSavedRecipes, setCreatedRecipes }) => {
+const RecipeCard = ({
+  recipe,
+  regularBookMark,
+  solidBookMark,
+  trash
+}) => {
   const { userId, cookies } = useContext(appContext);
-  const [publisher, setPublisher] = useState({});
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    const getPublisher = async () => {
-      axios.get(`${serverUrl}/users/getUser/userId/${recipe.owner}`)
-        .then(res => setPublisher(res.data.user));
-    }
-    getPublisher();
-  }, [recipe]);
-
-  const saveRecipe = async () => {
-    try {
-      axios.post(`${serverUrl}/recipes/saveRecipe`, {
-        userId: userId,
-        recipeId: recipe._id
-      }).then(res => {
-        toast.success(res.data.message, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const unSaveRecipe = async () => {
-    try {
-      axios.post(`${serverUrl}/recipes/unSaveRecipe`, {
-        userId: userId,
-        recipeId: recipe._id
-      }).then(res => {
-        const { message, savedRecipes } = res.data;
-        setSavedRecipes(savedRecipes);
-        toast.success(message, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const removeCreatedRecipe = async () => {
-    try {
-      axios.post(`${serverUrl}/recipes/removeCreatedRecipe`, {
-        userId: userId,
-        recipeId: recipe._id
-      }).then(res => {
-        const { message, createdRecipes } = res.data;
-        setCreatedRecipes(createdRecipes);
-        toast.success(message, {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  const [btnStatus, setBtnStatus] = useState({
+    regularBookMark: regularBookMark,
+    solidBookMark: solidBookMark,
+    trash: trash,
+  });
 
   return (
     <div className={style.recipe_card}>
       {/* Top */}
-      <div className={style.publisher}>
-        <Link to={`/users/${publisher?._id}`}>
-          <img src={publisher?.picture || userPictureAlt} alt="" />
+      <div className={style.owner}>
+        <Link to={`/users/${recipe.owner._id}`}>
+          <img src={recipe.owner.picture || userPictureAlt} alt="" />
         </Link>
         <span>
-          {publisher?.name || "Publisher Name"}
+          {recipe.owner.name || "owner name"}
         </span>
       </div>
 
@@ -117,39 +48,169 @@ const RecipeCard = ({ recipe, setSavedRecipes, setCreatedRecipes }) => {
 
         {
           cookies.access_token
-          && pathname !== "/userPortfolio"
-          && pathname !== "/recipes/savedRecipes"
-          && <button
-            className={style.save_recipe_btn}
-            title="save recipe"
-            onClick={saveRecipe} >
-            <i className="fa-regular fa-heart"></i>
-          </button>
+          && btnStatus.regularBookMark
+          && <SaveBtn
+            userId={userId}
+            recipeId={recipe._id}
+            setBtnStatus={setBtnStatus}
+          />
         }
 
         {
           cookies.access_token
-          && pathname === "/recipes/savedRecipes"
-          && <button
-            className={style.save_recipe_btn}
-            title="unSave recipe"
-            onClick={unSaveRecipe} >
-            <i className={`fa-solid fa-heart ${style.solid_heart}`}></i>
-          </button>
+          && btnStatus.solidBookMark
+          && <UnSaveBtn
+            userId={userId}
+            recipeId={recipe._id}
+            setBtnStatus={setBtnStatus}
+          />
         }
 
         {
           cookies.access_token
-          && pathname === "/userPortfolio"
-          && <button
-            className={style.save_recipe_btn}
-            title="remove created recipe"
-            onClick={removeCreatedRecipe} >
-            <i className="fa-solid fa-trash"></i>
-          </button>
+          && btnStatus.trash
+          && <RemoveBtn
+            userId={userId}
+            recipeId={recipe._id}
+          />
         }
       </div>
     </div>
+  )
+}
+
+const SaveBtn = ({ userId, recipeId, setBtnStatus }) => {
+  const [loading, setLoading] = useState(false);
+
+  const saveRecipe = async () => {
+    setLoading(true);
+    await axios.post(`${serverUrl}/recipes/saveRecipe`, {
+      userId: userId,
+      recipeId: recipeId
+    })
+      .then(res => {
+        const { saved } = res.data;
+        if (saved) {
+          setBtnStatus(prev => ({
+            ...prev,
+            "regularBookMark": false,
+            "solidBookMark": true,
+          }));
+        }
+      })
+      .catch(error => console.log(error));
+    setLoading(false);
+  }
+
+  return (
+    <button
+      disabled={loading}
+      style={loading ? { opacity: ".5", cursor: "revert" } : {}}
+      title="save recipe"
+      onClick={saveRecipe}
+    >
+      {loading ?
+        <RotatingLines
+          strokeColor="gray"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="20"
+          visible={true}
+        />
+        : <i className="fa-regular fa-bookmark"></i>}
+    </button>
+  )
+}
+
+const UnSaveBtn = ({ userId, recipeId, setBtnStatus }) => {
+  const { user, setUser } = useContext(portfolioContext) || {};
+  const [loading, setLoading] = useState(false);
+
+  const unSaveRecipe = async () => {
+    setLoading(true);
+    await axios.post(`${serverUrl}/recipes/unSaveRecipe`, {
+      userId: userId,
+      recipeId: recipeId
+    })
+      .then(res => {
+        const { unSaved } = res.data;
+        if (unSaved) {
+          setBtnStatus(prev => ({
+            ...prev,
+            "regularBookMark": true,
+            "solidBookMark": false,
+          }));
+          if (user?._id) {
+            const savedRecipes = user.savedRecipes.filter(recipe =>
+              recipe._id != recipeId);
+            setUser(prev => ({ ...prev, "savedRecipes": savedRecipes }))
+          }
+        }
+      })
+      .catch(error => console.log(error));
+    setLoading(false);
+  }
+
+  return (
+    <button
+      disabled={loading}
+      style={loading ? { opacity: ".5", cursor: "revert" } : {}}
+      className={style.unSave_btn}
+      title="unSave recipe"
+      onClick={unSaveRecipe}
+    >
+      {loading ?
+        <RotatingLines
+          strokeColor="gray"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="20"
+          visible={true}
+        />
+        : <i className="fa-solid fa-bookmark"></i>}
+    </button>
+  )
+}
+
+const RemoveBtn = ({ userId, recipeId }) => {
+  const { user, setUser } = useContext(portfolioContext) || {};
+  const [loading, setLoading] = useState(false);
+
+  const removeCreatedRecipe = async () => {
+    setLoading(true);
+    await axios.post(`${serverUrl}/recipes/removeCreatedRecipe`, {
+      userId: userId,
+      recipeId: recipeId
+    })
+      .then(res => {
+        const { removed } = res.data;
+        if (removed && user?._id) {
+          const createdRecipes = user.createdRecipes.filter(recipe =>
+            recipe._id != recipeId);
+          setUser(prev => ({ ...prev, "createdRecipes": createdRecipes }))
+        }
+      })
+      .catch(error => console.log(error));
+    setLoading(false);
+  }
+
+  return (
+    <button
+      disabled={loading}
+      style={loading ? { opacity: ".5", cursor: "revert" } : {}}
+      title="remove created recipe"
+      onClick={removeCreatedRecipe}
+    >
+      {loading ?
+        <RotatingLines
+          strokeColor="gray"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="20"
+          visible={true}
+        />
+        : <i className="fa-solid fa-trash"></i>}
+    </button>
   )
 }
 

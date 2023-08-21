@@ -1,6 +1,6 @@
 .recipe_card {
   padding: 15px;
-  border: 1px solid #e9ecf7;
+  border: 1px solid var(--light-grayish);
 
   display: flex;
   flex-direction: column;
@@ -13,13 +13,13 @@
   -o-border-radius: 6px;
 }
 
-.publisher {
+.owner {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.publisher img {
+.owner img {
   width: 40px;
   height: 40px;
   padding: 3px;
@@ -54,17 +54,17 @@
   color: var(--main-color);
 }
 
-.bottom_div .save_recipe_btn {
+.bottom_div button {
   background: none;
   cursor: pointer;
 }
 
-.bottom_div .save_recipe_btn i {
+.bottom_div button i {
   font-size: 18px;
   color: #f00;
 }
 
-.bottom_div .save_recipe_btn i.solid_heart {
+.bottom_div button.unSave_btn i {
   animation: scale_down .3s ease;
   -webkit-animation: scale_down .3s ease;
 }
@@ -79,11 +79,11 @@
   }
 
   50% {
-    transform: scale(1.5);
-    -webkit-transform: scale(1.5);
-    -moz-transform: scale(1.5);
-    -ms-transform: scale(1.5);
-    -o-transform: scale(1.5);
+    transform: scale(1.3);
+    -webkit-transform: scale(1.3);
+    -moz-transform: scale(1.3);
+    -ms-transform: scale(1.3);
+    -o-transform: scale(1.3);
   }
 
   100% {

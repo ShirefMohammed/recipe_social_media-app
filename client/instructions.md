@@ -1,11 +1,6 @@
-# Create suggested users or friends in UserPortfolio && User && Home Pages
+# Create suggested users or friends in UserPortfolio && User && Home Pages // Done
 
-# Create button in UserPortfolio Recipe component to delete created recipe
-
-# Create a pagination for recipes like prev 1 2 3 next in Home && User 
-# && SavedRecipes && UserPortfolio Pages
-
-# Create sidebar in Home contains type of recipes
+# Create button in UserPortfolio Recipe component to delete created recipe // Done
 
 # Make nav links to search form
 
@@ -14,3 +9,9 @@
 # make video to help user how to use the website
 
 # How to deploy the project
+
+
+# Day 1 & 2
+UserCard component // Done
+SuggestedUsers component random users // Done with Problem
+recipes section random recipes and limit and loading fetch button // Done

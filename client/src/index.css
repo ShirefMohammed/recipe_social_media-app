@@ -37,6 +37,9 @@ a {
 }
 
 .app{
+  position: sticky;
+  top: 0;
+  left: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -88,6 +91,7 @@ a {
 
 .first_btn{
   position: relative;
+  overflow: hidden;
   outline: none;
   border: 1px solid var(--main-color);
   padding: 10px;
@@ -131,6 +135,7 @@ a {
 
 .second_btn{
   position: relative;
+  overflow: hidden;
   outline: none;
   border: 1px solid var(--main-color);
   padding: 10px;

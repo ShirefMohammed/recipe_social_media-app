@@ -3,82 +3,71 @@ const express = require("express");
 const RecipeModel = require("../models/recipeModel");
 const UserModel = require("../models/userModel");
 
-// Get all recipes
-const getAllRecipes = async (req, res) => {
+// Get recipes without excepted recipes and with limit
+const getRecipes = async (req, res) => {
   try {
-    const recipes = await RecipeModel.find();
-    res.json({ recipes: recipes });
+    const { excepted, limit } = req.query;
+
+    if (excepted === "none") {
+      const recipes = await RecipeModel.find().populate("owner").limit(limit);
+      return res.status(200).json({ recipes: recipes });
+    }
+
+    else {
+      const user = await UserModel.findById(excepted);
+
+      const recipes = await RecipeModel.aggregate([
+        {
+          $match: {
+            _id: {
+              $nin: user.savedRecipes
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner"
+          }
+        },
+        { $unwind: "$owner" },
+        { $limit: parseInt(limit) }
+      ]);
+
+      res.status(200).json({ recipes: recipes });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-  catch (err) {
-    console.log(err);
-  }
-}
+};
 
 // Get recipe by id
 const getRecipeById = async (req, res) => {
-  const { recipeId } = req.params;
-
   try {
-    const recipe = await RecipeModel.findById(recipeId);
-    res.json({ recipe: recipe });
-  }
+    const { recipeId } = req.params;
 
-  catch (err) {
-    console.log(err);
-  }
-}
+    const recipe = await RecipeModel.findById(recipeId)
+      .populate("owner");
 
-// Get saved recipes
-const getSavedRecipes = async (req, res) => {
-  const { userId } = req.body;
+    if (!recipe) {
+      res.status(200).json({ message: "recipe not found" });
+    }
 
-  try {
-    const user = await UserModel.findById(userId);
-
-    const savedRecipes = await Promise.all(user.savedRecipes
-      .map(async (recipeId) => {
-        const recipe = await RecipeModel.findById(recipeId);
-        return recipe;
-      }));
-
-    res.json({ savedRecipes: savedRecipes });
-  }
-
-  catch (err) {
-    console.log(err);
-  }
-}
-
-// Get created recipes by userId or email
-const getCreatedRecipes = async (req, res) => {
-  const { userId, email } = req.body;
-
-  try {
-    let user;
-
-    userId ? user = await UserModel.findById(userId)
-      : email ? user = await UserModel.findOne({ email: email })
-        : false;
-
-    const createdRecipes = await Promise.all(user.createdRecipes
-      .map(async (recipeId) => {
-        const recipe = await RecipeModel.findById(recipeId);
-        return recipe;
-      }));
-
-    res.json({ createdRecipes: createdRecipes });
-  }
-
-  catch (err) {
-    console.log(err);
+    res.status(200).json({ recipe: recipe });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 
 // Create new recipe
 const createNewRecipe = async (req, res) => {
-  const { recipe } = req.body;
-
   try {
+    const { recipe } = req.body;
+
     const newRecipe = new RecipeModel({
       title: recipe.title,
       ingredients: recipe.ingredients,
@@ -90,65 +79,54 @@ const createNewRecipe = async (req, res) => {
 
     await newRecipe.save();
 
-    const user = await UserModel.findById(recipe.owner);
+    await UserModel.updateOne(
+      { _id: recipe.owner },
+      { $push: { createdRecipes: newRecipe._id } }
+    );
 
-    user.createdRecipes.push(newRecipe._id);
-
-    await user.save();
-
-    res.json({ message: "recipe created successfully" });
+    res.status(200).json({ message: "Recipe created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  catch (err) {
-    console.log(err);
-  }
-}
+};
 
 // Save recipe
 const saveRecipe = async (req, res) => {
-  const { userId, recipeId } = req.body;
-
   try {
-    const user = await UserModel.findById(userId);
-    if (user.savedRecipes.includes(recipeId)) {
-      res.status(200).json({ message: "recipe already saved" });
-    } else {
-      user.savedRecipes.push(recipeId);
-      await user.save();
-      res.status(200).json({ message: "recipe saved successfully" });
-    }
-  }
+    const { userId, recipeId } = req.body;
 
-  catch (error) {
-    res.status(400).json(error);
+    const user = await UserModel.findById(userId);
+
+    if (user.savedRecipes.includes(recipeId)) {
+      res.status(200).json({ saved: true });
+    } else {
+      await UserModel.updateOne(
+        { _id: userId },
+        { $push: { savedRecipes: recipeId } }
+      );
+      res.status(200).json({ saved: true });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 
 // UnSave recipe
 const unSaveRecipe = async (req, res) => {
-  const { userId, recipeId } = req.body;
-
   try {
+    const { userId, recipeId } = req.body;
+
     await UserModel.updateOne(
       { _id: userId },
       { $pull: { savedRecipes: recipeId } }
     );
 
-    const user = await UserModel.findById(userId);
-
-    const savedRecipes = await Promise.all(
-      user.savedRecipes.map(async (id) => {
-        const recipe = await RecipeModel.findById(id);
-        return recipe;
-      })
-    );
-
-    res.status(200).json({
-      savedRecipes: savedRecipes,
-      message: "Recipe unsaved successfully"
-    });
+    res.status(200).json({ unSaved: true });
   } catch (error) {
-    res.status(400).json(error);
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -161,35 +139,21 @@ const removeCreatedRecipe = async (req, res) => {
 
     await UserModel.updateOne(
       { _id: userId },
-      { $pull: { createdRecipes: recipeId } }
+      { $pull: { createdRecipes: recipeId, savedRecipes: recipeId } }
     );
 
-    await UserModel.updateOne(
-      { _id: userId },
-      { $pull: { savedRecipes: recipeId } }
-    );
-
-    const user = await UserModel.findById(userId);
-
-    const createdRecipes = await Promise.all(
-      user.createdRecipes.map(async (id) => {
-        const recipe = await RecipeModel.findById(id);
-        return recipe;
-      })
-    );
-
-    res.status(200).json({
-      createdRecipes: createdRecipes,
-      message: "recipe deleted successfully"
-    });
-  }
-
-  catch (error) {
-    res.status(400).json(error);
+    res.status(200).json({ removed: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 module.exports = {
-  getAllRecipes, getRecipeById, getSavedRecipes, getCreatedRecipes,
-  createNewRecipe, saveRecipe, unSaveRecipe, removeCreatedRecipe
+  getRecipes,
+  getRecipeById,
+  createNewRecipe,
+  saveRecipe,
+  unSaveRecipe,
+  removeCreatedRecipe
 };

@@ -1,31 +1,30 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { GetServerUrl } from "../../hooks";
 import { RecipeCard } from "../../components";
-
 import style from "./User.module.css";
 import accountBgAlt from "../../assets/accountBgAlt.png";
-import userAvatarAlt from "../../assets/userPictureAlt.png";
+import userPictureAlt from "../../assets/userPictureAlt.png";
 import axios from "axios";
-
 const serverUrl = GetServerUrl();
 
 const User = () => {
+  const { userId } = useParams();
   const [user, setUser] = useState({});
-  const [createdRecipes, setCreatedRecipes] = useState([]);
-  const { username } = useParams();
-  const location = useLocation();
+  const [userNotFoundMsg, setUserNotFoundMsg] = useState("");
 
   useEffect(() => {
-    axios.post(`${serverUrl}/users/getUser`, { username: username })
-      .then(res => setUser(res.data.user));
-    axios.post(`${serverUrl}/recipes/createdRecipes`, { username: username })
-      .then(res => setCreatedRecipes(res.data.createdRecipes));
-  }, [username, location]);
+    const getData = async () => {
+      axios.get(`${serverUrl}/users/getUser/userId/${userId}`)
+        .then(res => setUser(res.data.user))
+        .catch(() => setUserNotFoundMsg("User Not Found"));
+    }
+    getData();
+  }, [userId]);
 
   return (
     <>
-      {user ?
+      {user?._id ?
         <section className={style.user_account}>
           {/* User Details Section */}
           <section className={style.user_details}>
@@ -33,20 +32,23 @@ const User = () => {
               <img src={user.accountBg || accountBgAlt} alt="accountBg" />
             </div>
 
-            <div className={style.userAvatar}>
-              <img src={user.userAvatar || userAvatarAlt} alt="userAvatar" />
+            <div className={style.user_picture}>
+              <img src={user.picture || userPictureAlt} alt="userAvatar" />
             </div>
 
-            <div className={style.details}>
-              <h2 className={style.username}>{user.username}</h2>
+            <div className={style.about_user}>
+              <h2 className={style.name}>{user.name}</h2>
               <p className={style.bio}>{user.bio}</p>
             </div>
           </section>
 
           {/* Created Recipes */}
           <section className={style.created_recipes}>
-            {createdRecipes.length > 0 ? createdRecipes.map(recipe =>
-              <RecipeCard key={recipe._id} recipe={recipe} />)
+            {user.createdRecipes.length > 0 ? user.createdRecipes.map(recipe =>
+              <RecipeCard
+                key={recipe._id}
+                recipe={recipe}
+                setCreatedRecipes={user.createdRecipes} />)
               : ""}
           </section>
 
@@ -54,7 +56,9 @@ const User = () => {
           <div className={style.suggested_users}>
           </div>
         </section>
-        : <p className={style.user_not_found}>User Not Found</p>}
+        : userNotFoundMsg ?
+          <p className={style.user_not_found}>{userNotFoundMsg}</p>
+          : <p style={{ textAlign: "center" }}>loading ...</p>}
     </>
   )
 }

@@ -8,119 +8,179 @@ const RecipeModel = require("../models/recipeModel");
 // Get user by userId
 const getUserById = async (req, res) => {
   const { userId } = req.params;
+  const {
+    fullData,
+    createdRecipesLimit,
+    savedRecipesLimit,
+    followingStartIdx,
+    followingLimit,
+    followersStartIdx,
+    followersLimit
+  } = req.query;
 
   try {
+    if (!fullData) {
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({ user });
+    } else {
+      const user = await UserModel.findById(userId)
+        .populate({
+          path: "savedRecipes",
+          populate: { path: "owner" },
+          options: { limit: savedRecipesLimit }
+        })
+        .populate({
+          path: "createdRecipes",
+          populate: { path: "owner" },
+          options: { limit: createdRecipesLimit }
+        })
+        .populate({
+          path: "following",
+          options: {
+            limit: followingLimit,
+            skip: followingStartIdx
+          }
+
+        })
+        .populate({
+          path: "followers",
+          options: {
+            limit: followersLimit,
+            skip: followersStartIdx
+          }
+        });
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      return res.status(200).json({ user });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Get suggested users
+const getSuggestedUsers = async (req, res) => {
+  try {
+    const { userId, limit } = req.query;
+
     const user = await UserModel.findById(userId);
 
-    if (!user) {
-      return res.status(200).json({ message: "not found" });
-    }
+    const suggestedUsers = await UserModel.aggregate([
+      {
+        $match: {
+          _id: {
+            $ne: user._id,
+            $nin: [...user.following, ...user.followers]
+          }
+        }
+      },
+      { $sample: { size: parseInt(limit) } }
+    ]);
 
-    res.status(200).json({ user: user });
+    res.status(200).json({ suggestedUsers: suggestedUsers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  catch (error) {
-    res.status(400).json(error);
-  };
-}
-
-// Get user by name
-const getUserByName = async (req, res) => {
-  const { name } = req.params;
-
-  try {
-    const user = await UserModel.findOne({ name: name });
-
-    if (!user) {
-      return res.status(200).json({ message: "not found" });
-    }
-
-    res.status(200).json({ user: user });
-  }
-
-  catch (error) {
-    res.status(400).json(error);
-  };
-}
-
-// Get user by email
-const getUserByEmail = async (req, res) => {
-  const { email } = req.params;
-
-  try {
-    const user = await UserModel.findOne({ email: email });
-
-    if (!user) {
-      return res.status(200).json({ message: "not found" });
-    }
-
-    res.status(200).json({ user: user });
-  }
-
-  catch (error) {
-    res.status(400).json(error);
-  };
-}
+};
 
 // Update User Account
 const updateAccount = async (req, res) => {
   const {
-    userId, accountBg, picture,
-    bio, oldPassword, newPassword
+    userId,
+    accountBg,
+    picture,
+    bio,
+    oldPassword,
+    newPassword,
+    userFollowedId,
+    userUnFollowedId
   } = req.body;
 
   try {
-    const user = await UserModel.findById(userId);
-
     if (accountBg) {
-      user.accountBg = accountBg;
-      await user.save();
-      return res.status(200).json({ user: user });
+      await UserModel.updateOne({ _id: userId }, { accountBg });
     }
 
     if (picture) {
-      user.picture = picture;
-      await user.save();
-      return res.status(200).json({ user: user });
+      await UserModel.updateOne({ _id: userId }, { picture });
     }
 
     if (bio) {
-      user.bio = bio;
-      await user.save();
-      return res.status(200).json({ user: user });
+      await UserModel.updateOne({ _id: userId }, { bio });
     }
 
     if (oldPassword && newPassword) {
+      const user = await UserModel.findById(userId);
       const isPassValid = await bcrypt.compare(oldPassword, user.password);
 
       if (!isPassValid) {
         return res.status(200).json({
           changed: false,
-          message: "old password is wrong"
+          message: "Old password is incorrect"
         });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
+      await UserModel.updateOne({ _id: userId }, { password: hashedPassword });
 
       return res.status(200).json({
         changed: true,
-        message: "password changed successfully"
+        message: "Password changed successfully"
       });
     }
-  }
 
-  catch (error) {
-    res.status(400).json(error);
-  };
-}
+    if (userFollowedId) {
+      const user = await UserModel.findById(userId);
+
+      if (user.following.includes(userFollowedId)) {
+        return res.status(200).json({ followed: false });
+      }
+
+      await UserModel.updateOne(
+        { _id: userId },
+        { $push: { following: userFollowedId } }
+      );
+
+      return res.status(200).json({ followed: true });
+    }
+
+    if (userUnFollowedId) {
+      await UserModel.updateOne(
+        { _id: userId },
+        { $pull: { following: userUnFollowedId } }
+      );
+
+      return res.status(200).json({ unFollowed: true });
+    }
+
+    const user = await UserModel.findById(userId)
+      .populate("savedRecipes")
+      .populate("createdRecipes")
+      .populate("following")
+      .populate("followers");
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 // Delete User Account
 const deleteAccount = async (req, res) => {
-  const { userId, password } = req.body;
-
   try {
+    const { userId, password } = req.body;
+
     const user = await UserModel.findById(userId);
 
     const isPassValid = await bcrypt.compare(password, user.password);
@@ -128,29 +188,32 @@ const deleteAccount = async (req, res) => {
     if (!isPassValid) {
       return res.status(200).json({
         deleted: false,
-        message: "password is wrong"
+        message: "Password is incorrect"
       });
     }
 
     const deletedUser = await UserModel.deleteOne({ _id: userId });
 
-    deletedUser.acknowledged ?
+    if (deletedUser.acknowledged) {
       res.status(200).json({
         deleted: true,
-        message: "your account deleted successfully"
-      })
-      : res.status(200).json({
-        deleted: false,
-        message: "your account was't deleted"
+        message: "Your account has been deleted successfully"
       });
+    } else {
+      res.status(200).json({
+        deleted: false,
+        message: "Your account was not deleted"
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  catch (error) {
-    res.status(400).json(error);
-  };
-}
+};
 
 module.exports = {
-  getUserById, getUserByName, getUserByEmail,
-  updateAccount, deleteAccount
+  getUserById,
+  getSuggestedUsers,
+  updateAccount,
+  deleteAccount
 };

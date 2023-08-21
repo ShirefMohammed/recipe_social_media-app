@@ -3,13 +3,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { GetServerUrl, ScrollToTop } from "./hooks";
 import { Header, Footer } from "./components";
-import { Home, Authentication, CreateRecipe, SavedRecipes, Recipe, UserPortfolio, User, NoPage } from "./pages";
-
+import {
+  Home, Authentication, CreateRecipe, SavedRecipes,
+  Recipe, UserPortfolio, User, NoPage
+} from "./pages";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 const serverUrl = GetServerUrl()
-
 // eslint-disable-next-line react-refresh/only-export-components
 export const appContext = createContext();
 
@@ -44,7 +45,9 @@ function App() {
           <Header />
           <Routes>
             <Route path='/' element={<Home />} />
-            <Route path="/authentication/:authType" element={<Authentication />}
+            <Route
+              path="/authentication/:authType"
+              element={<Authentication />}
             />
             <Route path="/recipes/createRecipe" element={<CreateRecipe />} />
             <Route path="/recipes/savedRecipes" element={<SavedRecipes />} />
@@ -55,22 +58,21 @@ function App() {
           </Routes>
           <Footer />
         </div>
-        {/* Hooks */}
         <>
-          <ScrollToTop /> {/* HOOK TO SCROLL TO (0, 0) ON EVERY ROUTE  */}
+          <ScrollToTop /> {/* scroll to (0, 0) when path changes */}
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
       </BrowserRouter>
     </appContext.Provider>
   )

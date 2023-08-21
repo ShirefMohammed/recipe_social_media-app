@@ -13,11 +13,14 @@ const UserSchema = new Schema({
     type: String,
     default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1H4PZrSs0p0fQXR6f-IUvezMdjcgxrFjCkg&usqp=CAU"
   },
-  bio: { type: String },
-  following: [{ type: Schema.Types.ObjectId }],
-  followers: [{ type: Schema.Types.ObjectId }],
-  createdRecipes: [{ type: Schema.Types.ObjectId }],
-  savedRecipes: [{ type: Schema.Types.ObjectId }]
+  bio: {
+    type: String,
+    default: "has no bio"
+  },
+  following: [{ type: Schema.Types.ObjectId, ref: "users" }],
+  followers: [{ type: Schema.Types.ObjectId, ref: "users" }],
+  createdRecipes: [{ type: Schema.Types.ObjectId, ref: "recipes" }],
+  savedRecipes: [{ type: Schema.Types.ObjectId, ref: "recipes" }]
 });
 
 const UserModel = model("users", UserSchema);
