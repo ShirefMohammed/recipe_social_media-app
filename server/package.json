@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "env-cmd -f dev.env nodemon ./src/server.js"
+    "dev": "env-cmd -f dev.env nodemon ./src/server.js",
+    "start": "nodemon ./src/server.js"
   },
   "keywords": [],
   "author": "",
