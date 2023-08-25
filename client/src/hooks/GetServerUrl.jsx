@@ -1,3 +1,3 @@
 export default function GetServerUrl() {
-  return "http://localhost:3001";
+  return "https://recipe-social-media-app.onrender.com/";
 }
