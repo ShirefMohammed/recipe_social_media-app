@@ -1,0 +1,65 @@
+.users {
+  padding: 15px;
+  border: 1px solid var(--light-grayish);
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+}
+
+.users .users_page {
+  min-height: 187px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.users .last_page {
+  width: 100%;
+  min-height: 187px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.users .pagination {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.users .pagination button {
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+}
+
+.users .pagination .page_number {
+  padding: 3px 10px;
+  color: #fff;
+  background: #0ba6ff;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+}
+
+.spinner_container,
+.no_users {
+  width: 100%;
+  height: 266px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

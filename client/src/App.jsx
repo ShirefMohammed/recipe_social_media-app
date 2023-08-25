@@ -4,15 +4,23 @@ import { useCookies } from "react-cookie";
 import { GetServerUrl, ScrollToTop } from "./hooks";
 import { Header, Footer } from "./components";
 import {
-  Home, Authentication, CreateRecipe, SavedRecipes,
-  Recipe, UserPortfolio, User, NoPage
+  Home,
+  Authentication,
+  UserPortfolio,
+  CreateRecipe,
+  Recipe,
+  UserProfile,
+  SearchResults,
+  NoPage
 } from "./pages";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
-const serverUrl = GetServerUrl()
+
+const serverUrl = GetServerUrl();
+
 // eslint-disable-next-line react-refresh/only-export-components
-export const appContext = createContext();
+export const AppContext = createContext();
 
 function App() {
   const [cookies, setCookies] = useCookies(["access_token"]);
@@ -20,61 +28,106 @@ function App() {
   const [user, setUser] = useState({});
 
   useEffect(() => {
-    cookies.access_token && setUserId(localStorage.getItem("userId"));
+    if (cookies.access_token) {
+      setUserId(localStorage.getItem("userId"));
+    } else {
+      setUserId("");
+    }
   }, [cookies]);
 
   useEffect(() => {
-    if (!userId) return;
-    const getUser = async () => {
-      axios.get(`${serverUrl}/users/getUser/userId/${userId}`)
-        .then(res => setUser(res.data.user))
-        .catch(error => console.log(error));
-    }
-    getUser();
+    const fetchUser = async () => {
+      try {
+        if (userId) {
+          const response = await axios.get(`${serverUrl}/users/getUser/userId/${userId}`);
+          setUser(response.data.user);
+        } else {
+          setUser({});
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchUser();
   }, [userId]);
 
   return (
-    <appContext.Provider value={{
-      cookies, setCookies,
-      userId, setUserId,
-      user, setUser
-    }}
-    >
+    <AppContext.Provider value={{
+      cookies,
+      setCookies,
+      userId,
+      setUserId,
+      user,
+      setUser
+    }}>
       <BrowserRouter>
         <div className="app">
           <Header />
+
           <Routes>
-            <Route path='/' element={<Home />} />
+            <Route
+              path='/'
+              element={<Home />}
+            />
+
             <Route
               path="/authentication/:authType"
               element={<Authentication />}
             />
-            <Route path="/recipes/createRecipe" element={<CreateRecipe />} />
-            <Route path="/recipes/savedRecipes" element={<SavedRecipes />} />
-            <Route path="/recipes/:recipeId" element={<Recipe />} />
-            <Route path="/userPortfolio" element={<UserPortfolio />} />
-            <Route path="/users/:userId" element={<User />} />
-            <Route path="*" element={<NoPage />} />
+
+            <Route
+              path="/userPortfolio"
+              element={<UserPortfolio />}
+            />
+
+            <Route
+              path="/recipes/createRecipe"
+              element={<CreateRecipe />}
+            />
+
+            <Route
+              path="/recipes/:recipeId"
+              element={<Recipe />}
+            />
+
+            <Route
+              path="/users/:userId"
+              element={<UserProfile />}
+            />
+
+            <Route
+              path="/searchResults"
+              element={<SearchResults />}
+            />
+
+            <Route
+              path="*"
+              element={<NoPage />}
+            />
           </Routes>
+
           <Footer />
         </div>
-        <>
-          <ScrollToTop /> {/* scroll to (0, 0) when path changes */}
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
-        </>
+
+        {/* scroll to (0, 0) when path changes */}
+        <ScrollToTop />
+
+        {/* ToastContainer */}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </BrowserRouter>
-    </appContext.Provider>
+    </AppContext.Provider>
   )
 }
 

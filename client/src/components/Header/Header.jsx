@@ -1,78 +1,80 @@
 /* eslint-disable react/prop-types */
 import { useRef, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { appContext } from "../../App";
+import { AppContext } from "../../App";
 import style from "./Header.module.css";
 import LogoIcon from "../../assets/LogoIcon.png";
 import userPictureAlt from "../../assets/userPictureAlt.png";
 
 const Header = () => {
-  const bars = useRef();
-  const XMark = useRef();
-  const Search = useRef();
+  const barsRef = useRef();
+  const XMarkRef = useRef();
+  const searchRef = useRef();
   const [openOptions, setOpenOptions] = useState(false);
-
-  const { user, cookies } = useContext(appContext);
-
-  const [searchKey, setSearchKey] = useState();
+  const { user, cookies } = useContext(AppContext);
+  const [searchKey, setSearchKey] = useState("");
   const navigate = useNavigate();
 
   // Toggle sideBar
   const toggleSideBar = () => {
-    bars.current.classList.toggle(style.d_none);
-    XMark.current.classList.toggle(style.d_none);
-    Search.current.classList.toggle(style.close_search_sm);
+    barsRef.current.classList.toggle(style.d_none);
+    XMarkRef.current.classList.toggle(style.d_none);
+    searchRef.current.classList.toggle(style.close_search_sm);
     setOpenOptions(false);
-  }
+  };
 
   // closeAll Opened Taps
   const closeAllTaps = () => {
-    bars.current.classList.remove(style.d_none);
-    XMark.current.classList.add(style.d_none);
-    Search.current.classList.add(style.close_search_sm);
+    barsRef.current.classList.remove(style.d_none);
+    XMarkRef.current.classList.add(style.d_none);
+    searchRef.current.classList.add(style.close_search_sm);
     setOpenOptions(false);
-  }
+  };
 
-  // Navigate To User Page With searchKey
-  const SearchUser = (e) => {
+  // search
+  const handleSearch = (e) => {
     e.preventDefault();
-    navigate(`/users/${searchKey}`);
+    navigate(`/searchResults?searchKey=${searchKey}`);
     closeAllTaps();
     setSearchKey("");
-  }
+  };
 
   return (
     <header className={style.header}>
       <div className={`${style.content} container`}>
-        {/* left side */}
-        <div className={style.left_side}
+        <div
+          className={style.left_side}
           style={!cookies.access_token ? { gap: "20px" } : {}}
         >
-          {/* toggle button */}
+
           <button
             className={`${style.sideBar_btn} circle_btn`}
-            onClick={toggleSideBar}>
-            <i className={`fa-solid fa-bars ${style.bars}`} ref={bars}></i>
-            <i className={`fa-solid fa-xmark ${style.XMark} ${style.d_none}`}
-              ref={XMark}></i>
+            onClick={toggleSideBar}
+          >
+            <i className={`fa-solid fa-bars ${style.bars}`} ref={barsRef}></i>
+            <i className={`fa-solid fa-xmark ${style.XMark} ${style.d_none}`} ref={XMarkRef}></i>
           </button>
 
-          {/* logo link */}
-          <Link to='/' onClick={closeAllTaps}>
-            <img className={style.logo} src={LogoIcon} alt="Logo" />
+          <Link to="/" onClick={closeAllTaps}>
+            <img
+              className={style.logo}
+              src={LogoIcon}
+              alt="Logo" />
           </Link>
 
-          {/* Search Form */}
-          <div className={`${style.search} ${style.close_search_sm}`}
-            ref={Search}>
-            <form onSubmit={SearchUser}>
+          <div
+            className={`${style.search} ${style.close_search_sm}`}
+            ref={searchRef}
+          >
+            <form onSubmit={handleSearch}>
               <input
                 required
                 type="text"
-                placeholder="search about user"
+                placeholder="Search about user"
                 value={searchKey}
-                onChange={e => setSearchKey(e.target.value)}
+                onChange={(e) => setSearchKey(e.target.value)}
               />
+
               <button type="submit" className="circle_btn">
                 <i className="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -80,34 +82,37 @@ const Header = () => {
           </div>
         </div>
 
-        {/* right side */}
         <div className={style.right_side}>
           {
-            cookies.access_token ?
-              // If cookies.access_token return options
+            cookies.access_token ? (
               <div className={style.options}>
                 <button
                   className={`${style.options_btn} circle_btn`}
-                  onClick={() => setOpenOptions(prev => !prev)}>
+                  onClick={() => setOpenOptions((prev) => !prev)}
+                >
                   <img
                     src={user?.picture || userPictureAlt}
-                    alt="user Picture" />
+                    alt="User Picture"
+                  />
                 </button>
                 {
-                  openOptions &&
-                  <div className={style.options_container}>
-                    <OptionsList closeAllTaps={closeAllTaps} />
-                  </div>
+                  openOptions && (
+                    <div className={style.options_container}>
+                      <OptionsList closeAllTaps={closeAllTaps} />
+                    </div>
+                  )
                 }
               </div>
-              // else return signIn or signUp
-              : <SignLinks closeAllTaps={closeAllTaps} />
+            )
+              : (
+                <SignLinks closeAllTaps={closeAllTaps} />
+              )
           }
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
 const SignLinks = ({ closeAllTaps }) => {
   return (
@@ -117,7 +122,8 @@ const SignLinks = ({ closeAllTaps }) => {
           <Link
             to="/authentication/signIn"
             className="second_btn"
-            onClick={closeAllTaps}>
+            onClick={closeAllTaps}
+          >
             SignIn
           </Link>
         </li>
@@ -125,62 +131,59 @@ const SignLinks = ({ closeAllTaps }) => {
           <Link
             to="/authentication/signUp"
             className="first_btn"
-            onClick={closeAllTaps}>
+            onClick={closeAllTaps}
+          >
             SignUp
           </Link>
         </li>
       </ul>
     </nav>
-  )
-}
+  );
+};
 
 const OptionsList = ({ closeAllTaps }) => {
-  const { setCookies } = useContext(appContext);
+  const { setCookies } = useContext(AppContext);
+  const navigate = useNavigate();
 
   const logOut = () => {
     setCookies("access_token", "");
     localStorage.setItem("userId", "");
-  }
+    navigate("/authentication/signIn");
+  };
 
   return (
     <nav>
-      <ul className={`${style.options_list} fade_up`} >
+      <ul className={`${style.options_list} fade_up`}>
         <li>
           <Link
             to="/userPortfolio"
-            onClick={closeAllTaps}>
-            Your Portfolio
-            <i className="fa-solid fa-gear"></i>
+            onClick={closeAllTaps}
+          >
+            Your Portfolio <i className="fa-solid fa-gear"></i>
           </Link>
         </li>
+
         <li>
           <Link
-            to='/recipes/createRecipe'
-            onClick={closeAllTaps}>
-            Create Recipe
-            <i className="fa-solid fa-circle-plus"></i>
+            to="/recipes/createRecipe"
+            onClick={closeAllTaps}
+          >
+            Create Recipe <i className="fa-solid fa-circle-plus"></i>
           </Link>
         </li>
-        <li>
-          <Link
-            to='/recipes/savedRecipes'
-            onClick={closeAllTaps}>
-            Saved Recipes
-            <i className="fa-solid fa-cloud"></i>
-          </Link>
-        </li>
+
         <li>
           <span onClick={() => {
             closeAllTaps();
             logOut();
-          }}>
-            Log Out
-            <i className="fa-solid fa-right-from-bracket"></i>
+          }}
+          >
+            Log Out <i className="fa-solid fa-right-from-bracket"></i>
           </span>
         </li>
       </ul>
     </nav>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

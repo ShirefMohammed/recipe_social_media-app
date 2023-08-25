@@ -1,14 +1,11 @@
 .recipe {
   margin: 20px auto;
   width: calc(100% - 30px);
-  max-width: 700px;
-
-  padding: 15px;
-  border: 1px solid #e9ecf7;
+  max-width: 650px;
 
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 
   border-radius: 6px;
   -webkit-border-radius: 6px;
@@ -17,16 +14,16 @@
   -o-border-radius: 6px;
 }
 
-.publisher {
+.owner {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.publisher img {
+.owner img {
   width: 40px;
   height: 40px;
-  padding: 3px;
+  padding: 2px;
   object-fit: cover;
   box-shadow: var(--common-box-shadow);
   border-radius: 50%;
@@ -36,26 +33,29 @@
   -o-border-radius: 50%;
 }
 
-.recipeImg img {
+.recipeImg {
   width: 100%;
-  border-radius: 6px;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  -ms-border-radius: 6px;
-  -o-border-radius: 6px;
 }
 
-h3 {
+h2.recipe_title {
+  font-size: 22px;
   font-weight: 700;
   color: var(--main-color);
 }
 
-.recipe_name {
-  font-size: 23px;
+h3 {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h3>i {
+  color: #00f;
 }
 
 ol {
-  margin: 5px 0 0 35px;
+  margin: 5px 0 0 50px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -66,25 +66,22 @@ ol li {
 }
 
 .cooking_time p {
-  margin-top: 5px;
+  margin: 5px 0 0 25px;
   font-size: 14px;
 }
 
 .save_recipe_btn {
-  padding: 5px 20px;
-  color: var(--white);
-  background: var(--main-color);
+  width: 100%;
+  margin: auto;
+  background: none;
   cursor: pointer;
+}
 
+.not_found,
+.spinner_container{
+  width: 100%;
+  height: calc(100vh - 200px);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-
-  box-shadow: var(--common-box-shadow);
-  border-radius: 6px;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  -ms-border-radius: 6px;
-  -o-border-radius: 6px;
 }

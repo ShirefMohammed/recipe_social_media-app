@@ -13,8 +13,8 @@ mongoose.connect(process.env.MONGO_CONNECTION);
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use(cors()); // Let server being accessed by another domains (client)
-app.use(express.json()); // Deal with json files
+app.use(cors());
+app.use(express.json());
 app.use("/authentication", authenticationRouter);
 app.use("/users", usersRouter);
 app.use("/recipes", recipesRouter);

@@ -3,9 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { GetServerUrl, ConvertToBase64 } from "../../hooks";
-import { appContext } from "../../App";
-
-
+import { AppContext } from "../../App";
 import style from "./CreateRecipe.module.css";
 import whiteImg from "../../assets/whiteImg.png"
 import axios from "axios";
@@ -13,14 +11,14 @@ import axios from "axios";
 const serverUrl = GetServerUrl();
 
 const CreateRecipe = () => {
-  const { userId, cookies } = useContext(appContext);
+  const { userId, cookies } = useContext(AppContext);
   const [recipe, setRecipe] = useState({
     title: "",
     ingredients: [],
     instructions: [],
     cookingTime: "",
     imageUrl: "",
-    owner: ""
+    owner: userId
   });
   const navigate = useNavigate();
 
@@ -28,35 +26,28 @@ const CreateRecipe = () => {
     !cookies.access_token && navigate("*");
   }, [cookies, navigate]);
 
-  useEffect(() => {
-    setRecipe(prev => ({ ...prev, "owner": userId }));
-  }, [userId]);
-
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   // create new recipe
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      axios.post(`${serverUrl}/recipes/createNewRecipe`, { recipe: recipe })
-        .then(res => {
-          const { message } = res.data;
-          toast.success(message, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-          });
-        });
+      const promise = await axios.post(`${serverUrl}/recipes/createNewRecipe`, { recipe: recipe });
+      toast.success(promise.data.message, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
 
     setRecipe({
@@ -65,7 +56,7 @@ const CreateRecipe = () => {
       instructions: [],
       cookingTime: "",
       imageUrl: "",
-      owner: ""
+      owner: userId
     });
   }
 
@@ -83,9 +74,15 @@ const CreateRecipe = () => {
           required
         />
 
-        <Ingredients recipe={recipe} setRecipe={setRecipe} />
+        <Ingredients
+          recipe={recipe}
+          setRecipe={setRecipe}
+        />
 
-        <Instructions recipe={recipe} setRecipe={setRecipe} />
+        <Instructions
+          recipe={recipe}
+          setRecipe={setRecipe}
+        />
 
         <input
           type="text"
@@ -96,7 +93,10 @@ const CreateRecipe = () => {
           required
         />
 
-        <RecipeImage recipe={recipe} setRecipe={setRecipe} />
+        <RecipeImage
+          recipe={recipe}
+          setRecipe={setRecipe}
+        />
 
         <button
           type="submit"
@@ -112,7 +112,7 @@ const CreateRecipe = () => {
 const Ingredients = ({ recipe, setRecipe }) => {
   const [newIngredient, setNewIngredient] = useState("");
 
-  const addIngredient = () => {
+  const addIngredient = async () => {
     if (!newIngredient) return;
 
     setRecipe(prev => ({
@@ -123,9 +123,8 @@ const Ingredients = ({ recipe, setRecipe }) => {
     setNewIngredient("");
   }
 
-  const removeIngredient = (index) => {
-    recipe.ingredients = recipe.ingredients.filter((ingredient, idx) =>
-      idx != index);
+  const removeIngredient = async (index) => {
+    recipe.ingredients = recipe.ingredients.filter((_, idx) => idx !== index);
 
     setRecipe(prev => ({
       ...prev,
@@ -138,7 +137,7 @@ const Ingredients = ({ recipe, setRecipe }) => {
       <div className="ingredients">
         <input
           type="text"
-          placeholder="enter ingredients"
+          placeholder="recipe ingredients"
           required={recipe.ingredients.length > 0 ? false : true}
           value={newIngredient}
           onChange={e => setNewIngredient(e.target.value)}
@@ -153,22 +152,25 @@ const Ingredients = ({ recipe, setRecipe }) => {
         </button>
       </div>
 
-      {recipe.ingredients.length > 0 ?
+      {
+        recipe.ingredients.length > 0 &&
         <ol>
-          {recipe.ingredients.map((ingredient, index) => {
-            return <li key={index}>
-              <div>
-                <span>{ingredient}</span>
-                <button
-                  type="button"
-                  onClick={() => removeIngredient(index)}>
-                  <i className="fa-solid fa-minus"></i>
-                </button>
-              </div>
-            </li>
-          })}
+          {
+            recipe.ingredients.map((ingredient, index) =>
+              <li key={index}>
+                <div>
+                  <span>{ingredient}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeIngredient(index)}>
+                    <i className="fa-solid fa-minus"></i>
+                  </button>
+                </div>
+              </li>
+            )
+          }
         </ol>
-        : ""}
+      }
     </>
   )
 }
@@ -176,7 +178,7 @@ const Ingredients = ({ recipe, setRecipe }) => {
 const Instructions = ({ recipe, setRecipe }) => {
   const [newInstruction, setNewInstruction] = useState("");
 
-  const addInstruction = () => {
+  const addInstruction = async () => {
     if (!newInstruction) return;
 
     setRecipe(prev => ({
@@ -187,9 +189,8 @@ const Instructions = ({ recipe, setRecipe }) => {
     setNewInstruction("");
   }
 
-  const removeInstruction = (index) => {
-    recipe.instructions = recipe.instructions.filter((instruction, idx) =>
-      idx != index);
+  const removeInstruction = async (index) => {
+    recipe.instructions = recipe.instructions.filter((_, idx) => idx !== index);
 
     setRecipe(prev => ({
       ...prev,
@@ -202,7 +203,7 @@ const Instructions = ({ recipe, setRecipe }) => {
       <div className="instructions">
         <input
           type="text"
-          placeholder="enter instructions"
+          placeholder="recipe instructions"
           required={recipe.instructions.length > 0 ? false : true}
           value={newInstruction}
           onChange={e => setNewInstruction(e.target.value)}
@@ -217,28 +218,31 @@ const Instructions = ({ recipe, setRecipe }) => {
         </button>
       </div>
 
-      {recipe.instructions.length > 0 ?
+      {
+        recipe.instructions.length > 0 &&
         <ol>
-          {recipe.instructions.map((instruction, index) => {
-            return <li key={index}>
-              <div>
-                <span>{instruction}</span>
-                <button
-                  type="button"
-                  onClick={() => removeInstruction(index)}>
-                  <i className="fa-solid fa-minus"></i>
-                </button>
-              </div>
-            </li>
-          })}
+          {
+            recipe.instructions.map((instruction, index) =>
+              <li key={index}>
+                <div>
+                  <span>{instruction}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeInstruction(index)}>
+                    <i className="fa-solid fa-minus"></i>
+                  </button>
+                </div>
+              </li>
+            )
+          }
         </ol>
-        : ""}
+      }
     </>
   )
 }
 
 const RecipeImage = ({ recipe, setRecipe }) => {
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     setRecipe(prev => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
@@ -256,7 +260,7 @@ const RecipeImage = ({ recipe, setRecipe }) => {
         <input
           type="text"
           name="imageUrl"
-          placeholder="Recipe Image Url"
+          placeholder="recipe image url"
           value={recipe.imageUrl}
           onChange={handleChange}
           required

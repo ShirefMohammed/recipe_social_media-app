@@ -1,7 +1,7 @@
 .suggested_users {
   position: sticky;
   top: 105px;
-  
+
   width: 100%;
   height: max-content;
   max-height: 50vh;
@@ -21,9 +21,11 @@
   -o-border-radius: 6px;
 }
 
-.suggested_users h2{
+.suggested_users h2 {
   font-size: 18px;
   font-weight: 700;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--light-grayish);
 }
 
 .no_suggested_users,
@@ -36,7 +38,7 @@
   text-align: center;
 }
 
-.suggested_user_card {
+.user_card {
   display: flex;
   gap: 15px;
 }
@@ -47,6 +49,7 @@
   object-fit: cover;
   padding: 2px;
   background: var(--white);
+  box-shadow: var(--common-box-shadow);
   border-radius: 50%;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
@@ -85,15 +88,16 @@
   -moz-border-radius: 15px;
   -ms-border-radius: 15px;
   -o-border-radius: 15px;
-}
 
-.right_side button.follow {
-  color: #0ba6ff;
   -webkit-transition: var(--common-transition);
   -moz-transition: var(--common-transition);
   -ms-transition: var(--common-transition);
   -o-transition: var(--common-transition);
   transition: var(--common-transition);
+}
+
+.right_side button.follow {
+  color: #0ba6ff;
 }
 
 .right_side button.follow:hover {
@@ -104,11 +108,6 @@
 .right_side button.unFollow {
   color: #fff;
   background: #0ba6ff;
-  -webkit-transition: var(--common-transition);
-  -moz-transition: var(--common-transition);
-  -ms-transition: var(--common-transition);
-  -o-transition: var(--common-transition);
-  transition: var(--common-transition);
 }
 
 .right_side button.unFollow:hover {

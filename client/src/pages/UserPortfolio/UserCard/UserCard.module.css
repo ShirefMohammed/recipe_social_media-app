@@ -1,0 +1,84 @@
+.user_card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user_card>img {
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  object-fit: cover;
+  background: var(--white);
+  box-shadow: var(--common-box-shadow);
+  border-radius: 50%;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+}
+
+.user_card .middle_side a {
+  font-weight: 700;
+}
+
+.user_card .middle_side a:hover {
+  text-decoration: underline;
+}
+
+.user_card .middle_side p {
+  font-size: 12px;
+}
+
+.user_card>button {
+  height: max-content;
+  font-size: 12px;
+  padding: 8px 15px;
+  margin-left: auto;
+
+  font-weight: 700;
+  background: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  -ms-border-radius: 20px;
+  -o-border-radius: 20px;
+  border-radius: 20px;
+}
+
+.user_card>button.unFollow {
+  color: #fff;
+  background: #0ba6ff;
+  border: 1px solid #0ba6ff;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.user_card>button.unFollow:hover {
+  color: revert;
+  background: none;
+}
+
+.user_card>button.remove {
+  color: #fff;
+  background: #f00;
+  border: 1px solid #f00;
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.user_card>button.remove:hover {
+  color: #f00;
+  background: none;
+}

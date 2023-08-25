@@ -24,6 +24,7 @@ router.route("/saveRecipe").post(saveRecipe);
 // UnSave recipe
 router.route("/unSaveRecipe").post(unSaveRecipe);
 
+// Remove created recipe
 router.route("/removeCreatedRecipe").post(removeCreatedRecipe);
 
 module.exports = router;

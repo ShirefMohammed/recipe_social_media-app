@@ -3,45 +3,49 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { RotatingLines } from "react-loader-spinner";
 import { GetServerUrl } from "../../hooks";
-import { appContext } from "../../App";
+import { AppContext } from "../../App";
 import style from "./SuggestedUsers.module.css";
 import axios from "axios";
+
 const serverUrl = GetServerUrl();
 
 const SuggestedUsers = () => {
-  const { userId } = useContext(appContext);
+  const { userId } = useContext(AppContext);
   const [suggestedUsers, setSuggestedUsers] = useState();
   const [suggestedUsersLimit] = useState(8);
 
   useEffect(() => {
-    const getSuggestedUsers = async () => {
-      if (!userId) return;
-      await axios.get(`${serverUrl}/users/getSuggestedUsers?userId=${userId}&&limit=${suggestedUsersLimit}`)
-        .then(res => setSuggestedUsers(res.data.suggestedUsers))
-        .catch(error => console.log(error));
+    const fetchSuggestedUsers = async () => {
+      try {
+        if (!userId) return;
+        const promise = await axios.get(`${serverUrl}/users/getSuggestedUsers?userId=${userId}&&limit=${suggestedUsersLimit}`);
+        setSuggestedUsers(promise.data.suggestedUsers);
+      } catch (error) {
+        console.log(error);
+      }
     }
-    getSuggestedUsers();
+
+    fetchSuggestedUsers();
   }, [suggestedUsersLimit, userId]);
 
   return (
     <div className={style.suggested_users}>
       {
-        // if suggested users exist
         suggestedUsers?.length > 0 ?
           <>
-            <h2>suggested users</h2>
-            {suggestedUsers.map(user => {
-              return <SuggestedUserCard key={user._id} user={user} />
-            })}
+            <h2>Suggested Users</h2>
+            {
+              suggestedUsers.map(user => {
+                return <UserCard key={user._id} user={user} />
+              })
+            }
           </>
 
-          // if there is no suggested users in data base
           : suggestedUsers?.length == 0 ?
             <p className={style.no_suggested_users}>
               Suggested Users Will appear Here
             </p>
 
-            // if fetching data loading
             : <div className={style.spinner_container}>
               <RotatingLines
                 strokeColor="gray"
@@ -56,41 +60,35 @@ const SuggestedUsers = () => {
   )
 }
 
-const SuggestedUserCard = ({ user }) => {
-  const { userId } = useContext(appContext);
+const UserCard = ({ user }) => {
+  const { userId } = useContext(AppContext);
   const [isFollowed, setIsFollowed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const followUser = async () => {
-    setLoading(true);
-    await axios.post(`${serverUrl}/users/userPortfolio/updateAccount`, {
-      userId: userId,
-      userFollowedId: user._id
-    })
-      .then(res => {
-        const { followed } = res.data;
-        followed && setIsFollowed(true);
-      })
-      .catch(error => console.log(error));
-    setLoading(false);
+    try {
+      setLoading(true);
+      const promise = await axios.post(`${serverUrl}/users/userPortfolio/updateAccount`, { userId: userId, userFollowedId: user._id });
+      promise.data.followed && setIsFollowed(true);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const unFollowUser = async () => {
-    setLoading(true);
-    await axios.post(`${serverUrl}/users/userPortfolio/updateAccount`, {
-      userId: userId,
-      userUnFollowedId: user._id
-    })
-      .then(res => {
-        const { unFollowed } = res.data;
-        unFollowed && setIsFollowed(false);
-      })
-      .catch(error => console.log(error));
-    setLoading(false);
+    try {
+      setLoading(true);
+      const promise = await axios.post(`${serverUrl}/users/userPortfolio/updateAccount`, { userId: userId, userUnFollowedId: user._id });
+      promise.data.unFollowed && setIsFollowed(false);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
-    <div className={style.suggested_user_card}>
+    <div className={style.user_card}>
       <div className={style.left_side}>
         <img
           src={user.picture}
@@ -113,29 +111,35 @@ const SuggestedUserCard = ({ user }) => {
           className={isFollowed ? style.unFollow : style.follow}
           onClick={isFollowed ? unFollowUser : followUser}
         >
-          {isFollowed ?
-            <>
-              {loading &&
-                <RotatingLines
-                  strokeColor="gray"
-                  strokeWidth="5"
-                  animationDuration="0.75"
-                  width="15"
-                  visible={true}
-                />}
-              unFollow
-            </>
-            : <>
-              {loading &&
-                <RotatingLines
-                  strokeColor="gray"
-                  strokeWidth="5"
-                  animationDuration="0.75"
-                  width="15"
-                  visible={true}
-                />}
-              follow
-            </>}
+          {
+            isFollowed ?
+              <>
+                {
+                  loading &&
+                  <RotatingLines
+                    strokeColor="gray"
+                    strokeWidth="5"
+                    animationDuration="0.75"
+                    width="15"
+                    visible={true}
+                  />
+                }
+                unfollow
+              </>
+              : <>
+                {
+                  loading &&
+                  <RotatingLines
+                    strokeColor="gray"
+                    strokeWidth="5"
+                    animationDuration="0.75"
+                    width="15"
+                    visible={true}
+                  />
+                }
+                follow
+              </>
+          }
         </button>
       </div>
     </div>

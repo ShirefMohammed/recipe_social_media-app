@@ -1,0 +1,36 @@
+.recipes {
+  max-width: 600px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.recipes>button {
+  color: var(--white);
+  background: var(--main-color);
+
+  width: max-content;
+  padding: 10px 20px;
+  margin: auto;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+}
+
+.no_recipes_posted,
+.spinner_container {
+  width: 100%;
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

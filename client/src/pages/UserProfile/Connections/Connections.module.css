@@ -1,0 +1,57 @@
+.swiper>div:nth-child(2),
+.swiper>div:nth-child(3) {
+  width: 30px !important;
+  height: 30px !important;
+
+  color: #000 !important;
+  background: #fff !important;
+  box-shadow: var(--common-box-shadow);
+
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+.swiper>div:nth-child(2):hover,
+.swiper>div:nth-child(3):hover {
+  background: var(--light-grayish) !important;
+}
+
+.swiper>div:nth-child(2)::after,
+.swiper>div:nth-child(3)::after {
+  font-size: 13px !important;
+}
+
+.load_more{
+  align-self: center;
+}
+
+.load_more > button {
+  padding: 5px 10px;
+  background: var(--light-grayish);
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin: auto;
+
+  border-radius: 6px;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+}
+
+.no_connections{
+  font-size: 12px;
+}

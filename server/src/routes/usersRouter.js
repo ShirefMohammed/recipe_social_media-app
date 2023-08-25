@@ -3,6 +3,8 @@ const express = require("express");
 const {
   getUserById,
   getSuggestedUsers,
+  checkFollowStatus,
+  searchUsers,
   updateAccount,
   deleteAccount
 } = require("../controllers/usersController");
@@ -14,6 +16,12 @@ router.route("/getUser/userId/:userId").get(getUserById);
 
 // Get suggested users
 router.route("/getSuggestedUsers").get(getSuggestedUsers);
+
+// Check follow status
+router.route("/checkFollowStatus").post(checkFollowStatus);
+
+// Search users
+router.route("/searchUsers").get(searchUsers);
 
 // Update User Account
 router.route("/userPortfolio/updateAccount").post(updateAccount);

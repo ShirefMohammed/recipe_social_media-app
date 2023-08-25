@@ -59,7 +59,18 @@
 .create_recipe form>ol {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+  
+  margin: 0;
+  padding: 14px;
+  padding-left: 35px;
+  border: 1px solid var(--light-grayish);
+
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
 }
 
 .create_recipe form>ol li::marker {
@@ -74,6 +85,7 @@
 }
 
 .create_recipe form>ol li :is(span, i) {
+  flex: 1;
   word-break: break-all;
   font-size: 12px;
 }
@@ -82,7 +94,6 @@
   width: 20px;
   height: 20px;
 
-  margin-right: 12px;
   cursor: pointer;
   background: var(--light-grayish);
 
@@ -111,7 +122,6 @@ input[name="recipeImgFile"] {
 }
 
 .create_recipe form>button {
-  width: 100%;
-  justify-content: center;
+  margin: auto;
   cursor: pointer;
 }

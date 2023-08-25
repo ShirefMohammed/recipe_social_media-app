@@ -1,0 +1,47 @@
+:is(button.follow, button.unFollow) {
+  width: 100px;
+  height: 25px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  background: none;
+  border: 1px solid #0ba6ff;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  -ms-border-radius: 6px;
+  -o-border-radius: 6px;
+  border-radius: 6px;
+
+  -webkit-transition: var(--common-transition);
+  -moz-transition: var(--common-transition);
+  -ms-transition: var(--common-transition);
+  -o-transition: var(--common-transition);
+  transition: var(--common-transition);
+}
+
+button.follow {
+  color: #0ba6ff;
+}
+
+button.follow:hover {
+  color: #fff;
+  background: #0ba6ff;
+}
+
+button.unFollow {
+  color: #fff;
+  background: #0ba6ff;
+}
+
+button.unFollow:hover {
+  color: revert;
+  background: none;
+}

@@ -1,111 +1,139 @@
 import { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { GetServerUrl } from "../../hooks";
+import { AppContext } from "../../App";
 import { toast } from "react-toastify";
-import { appContext } from "../../App";
+import { RotatingLines } from "react-loader-spinner";
 import style from "./Recipe.module.css";
-import userPictureAlt from "../../assets/userPictureAlt.png";
 import axios from "axios";
+
 const serverUrl = GetServerUrl();
 
 const Recipe = () => {
-  const { cookies, userId } = useContext(appContext);
+  const { cookies, userId } = useContext(AppContext);
   const { recipeId } = useParams();
   const [recipe, setRecipe] = useState({});
   const [recipeNotFoundMsg, setRecipeNotFoundMsg] = useState("");
 
   useEffect(() => {
-    const getRecipe = async () => {
-      axios.get(`${serverUrl}/recipes/recipeId/${recipeId}`)
-        .then(res => setRecipe(res.data.recipe))
-        .catch(() => setRecipeNotFoundMsg("Recipe Not Found"));
+    const fetchRecipe = async () => {
+      try {
+        const promise = await axios.get(`${serverUrl}/recipes/recipeId/${recipeId}`);
+        setRecipe(promise.data.recipe)
+      } catch {
+        setRecipeNotFoundMsg("Recipe Not Found")
+      }
     }
-    getRecipe();
+
+    fetchRecipe();
   }, [recipeId]);
 
-  // Save Recipe
   const saveRecipe = async () => {
-    axios.post(`${serverUrl}/recipes/saveRecipe`, {
-      userId: userId,
-      recipeId: recipe._id
-    }).then(res => {
-      toast.success(res.data.message, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+    try {
+      const promise = await axios.post(`${serverUrl}/recipes/saveRecipe`, {
+        userId: userId,
+        recipeId: recipe._id
       });
-    })
-      .catch(error => console.log(error));
+      if (promise.data.saved) {
+        toast.success("recipe saved successfully", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
     <>
       {recipe?._id ?
         <section className={style.recipe}>
-          {/* Publisher Account and Name */}
-          <div className={style.publisher}>
+          <div className={style.owner}>
             <Link to={`/users/${recipe.owner._id}`}>
-              <img
-                src={recipe.owner.picture || userPictureAlt}
-                alt="publisher picture" />
+              <img src={recipe.owner.picture} alt="owner picture" />
             </Link>
-            <span> {recipe.owner.name || "publisher name"} </span>
+            <span> {recipe.owner.name} </span>
           </div>
 
-          {/* Recipe Image */}
-          <div className={style.recipeImg}>
-            <img src={recipe.imageUrl} alt="recipe imageUrl" />
-          </div>
+          <img
+            className={style.recipeImg}
+            src={recipe.imageUrl}
+            alt="recipe imageUrl"
+          />
 
-          {/* Recipe Name */}
-          <h3 className={style.recipe_name}>
+          <h2 className={style.recipe_title}>
             {recipe.title}
-          </h3>
+          </h2>
 
-          {/* Recipe Ingredients */}
           <div className={style.ingredients}>
-            <h3>Recipe Ingredients</h3>
+            <h3>
+              <i className="fa-solid fa-angles-right"></i>
+              Recipe Ingredients
+            </h3>
             <ol>
-              {recipe?.ingredients?.map((ingredient, index) => {
-                return ingredient && <li key={index}>{ingredient}</li>;
-              })}
+              {
+                recipe?.ingredients?.map((ingredient, index) => {
+                  return <li key={index}>{ingredient}</li>
+                })
+              }
             </ol>
           </div>
 
-          {/* Recipe Instructions */}
           <div className={style.instructions}>
-            <h3>Recipe Instructions</h3>
+            <h3>
+              <i className="fa-solid fa-angles-right"></i>
+              Recipe Instructions
+            </h3>
             <ol>
-              {recipe?.instructions?.map((instruction, index) => {
-                return instruction && <li key={index}>{instruction}</li>;
-              })}
+              {
+                recipe?.instructions?.map((instruction, index) => {
+                  return <li key={index}>{instruction}</li>
+                })
+              }
             </ol>
           </div>
 
-          {/* Recipe Cooking Time */}
           <div className={style.cooking_time}>
-            <h3>Recipe Cooking Time</h3>
-            <p>{recipe?.cookingTime}</p>
+            <h3>
+              <i className="fa-solid fa-angles-right"></i>
+              Recipe Cooking Time
+            </h3>
+            <p>{recipe.cookingTime}</p>
           </div>
 
-          {/* Save Recipe Button */}
-          {cookies.access_token &&
+          {
+            cookies.access_token &&
             <button
-              className={style.save_recipe_btn}
+              className={`${style.save_recipe_btn} second_btn`}
               onClick={saveRecipe}
             >
               Save Recipe
-              <i className="fa-regular fa-heart"></i>
-            </button>}
+              <i className="fa-regular fa-bookMark"></i>
+            </button>
+          }
         </section>
+
         : recipeNotFoundMsg ?
-          <p style={{ textAlign: "center" }}>{recipeNotFoundMsg}</p>
-          : <p style={{ textAlign: "center" }}>loading ...</p>}
+          <p className={style.not_found}>
+            {recipeNotFoundMsg}
+          </p>
+
+          : <p className={style.spinner_container}>
+            <RotatingLines
+              strokeColor="gray"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="40"
+              visible={true}
+            />
+          </p>}
     </>
   )
 }

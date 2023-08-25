@@ -79,7 +79,7 @@ const getSuggestedUsers = async (req, res) => {
         $match: {
           _id: {
             $ne: user._id,
-            $nin: [...user.following, ...user.followers]
+            $nin: [...user.following]
           }
         }
       },
@@ -93,6 +93,44 @@ const getSuggestedUsers = async (req, res) => {
   }
 };
 
+// Check follow status
+const checkFollowStatus = async (req, res) => {
+  try {
+    const { userId, followedId } = req.body;
+
+    const user = await UserModel.findById(userId);
+
+    if (user.following.includes(followedId)) {
+      res.status(200).json({ followed: true });
+    } else {
+      res.status(200).json({ followed: false });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// Search users
+const searchUsers = async (req, res) => {
+  try {
+    const { includes, limit } = req.query;
+
+    if (includes) {
+      const users = await UserModel.find(
+        { name: { $regex: `.*${includes}.*`, $options: 'i' } }
+      ).limit(limit);
+
+      return res.status(200).json({ results: users });
+    }
+
+    res.status(200).json({ results: [] });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 // Update User Account
 const updateAccount = async (req, res) => {
   const {
@@ -103,7 +141,8 @@ const updateAccount = async (req, res) => {
     oldPassword,
     newPassword,
     userFollowedId,
-    userUnFollowedId
+    userUnFollowedId,
+    removedFollowerId
   } = req.body;
 
   try {
@@ -140,16 +179,22 @@ const updateAccount = async (req, res) => {
     }
 
     if (userFollowedId) {
-      const user = await UserModel.findById(userId);
+      const firstUser = await UserModel.findById(userId);
+      const secondUser = await UserModel.findById(userFollowedId);
 
-      if (user.following.includes(userFollowedId)) {
-        return res.status(200).json({ followed: false });
+      if (!firstUser.following.includes(userFollowedId)) {
+        await UserModel.updateOne(
+          { _id: userId },
+          { $push: { following: userFollowedId } }
+        );
       }
 
-      await UserModel.updateOne(
-        { _id: userId },
-        { $push: { following: userFollowedId } }
-      );
+      if (!secondUser.followers.includes(userId)) {
+        await UserModel.updateOne(
+          { _id: userFollowedId },
+          { $push: { followers: userId } }
+        );
+      }
 
       return res.status(200).json({ followed: true });
     }
@@ -160,7 +205,26 @@ const updateAccount = async (req, res) => {
         { $pull: { following: userUnFollowedId } }
       );
 
+      await UserModel.updateOne(
+        { _id: userUnFollowedId },
+        { $pull: { followers: userId } }
+      );
+
       return res.status(200).json({ unFollowed: true });
+    }
+
+    if (removedFollowerId) {
+      await UserModel.updateOne(
+        { _id: userId },
+        { $pull: { followers: removedFollowerId } }
+      );
+
+      await UserModel.updateOne(
+        { _id: userUnFollowedId },
+        { $pull: { following: userId } }
+      );
+
+      return res.status(200).json({ removed: true });
     }
 
     const user = await UserModel.findById(userId)
@@ -214,6 +278,8 @@ const deleteAccount = async (req, res) => {
 module.exports = {
   getUserById,
   getSuggestedUsers,
+  checkFollowStatus,
+  searchUsers,
   updateAccount,
   deleteAccount
 };

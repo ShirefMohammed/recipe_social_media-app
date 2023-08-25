@@ -2,21 +2,16 @@
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { GetServerUrl } from "../../hooks";
-import { appContext } from "../../App";
-import { portfolioContext } from "../../pages/UserPortfolio/UserPortfolio";
+import { AppContext } from "../../App";
+import { PortfolioContext } from "../../pages/UserPortfolio/UserPortfolio";
 import { RotatingLines } from "react-loader-spinner";
 import style from "./RecipeCard.module.css";
 import axios from "axios";
-import userPictureAlt from "../../assets/userPictureAlt.png";
+
 const serverUrl = GetServerUrl();
 
-const RecipeCard = ({
-  recipe,
-  regularBookMark,
-  solidBookMark,
-  trash
-}) => {
-  const { userId, cookies } = useContext(appContext);
+const RecipeCard = ({ recipe, regularBookMark, solidBookMark, trash }) => {
+  const { userId, cookies } = useContext(AppContext);
   const [btnStatus, setBtnStatus] = useState({
     regularBookMark: regularBookMark,
     solidBookMark: solidBookMark,
@@ -28,16 +23,19 @@ const RecipeCard = ({
       {/* Top */}
       <div className={style.owner}>
         <Link to={`/users/${recipe.owner._id}`}>
-          <img src={recipe.owner.picture || userPictureAlt} alt="" />
+          <img
+            src={recipe.owner.picture}
+            alt="user picture"
+          />
         </Link>
         <span>
-          {recipe.owner.name || "owner name"}
+          {recipe.owner.name}
         </span>
       </div>
 
       {/* Middle */}
       <Link to={`/recipes/${recipe._id}`} className={style.recipe_img}>
-        <img src={recipe.imageUrl} alt="recipe imageUrl" />
+        <img src={recipe.imageUrl} alt="recipe image" />
       </Link>
 
       {/* Bottom */}
@@ -83,23 +81,23 @@ const SaveBtn = ({ userId, recipeId, setBtnStatus }) => {
   const [loading, setLoading] = useState(false);
 
   const saveRecipe = async () => {
-    setLoading(true);
-    await axios.post(`${serverUrl}/recipes/saveRecipe`, {
-      userId: userId,
-      recipeId: recipeId
-    })
-      .then(res => {
-        const { saved } = res.data;
-        if (saved) {
-          setBtnStatus(prev => ({
-            ...prev,
-            "regularBookMark": false,
-            "solidBookMark": true,
-          }));
-        }
-      })
-      .catch(error => console.log(error));
-    setLoading(false);
+    try {
+      setLoading(true);
+      const promise = await axios.post(`${serverUrl}/recipes/saveRecipe`, {
+        userId: userId,
+        recipeId: recipeId
+      });
+      if (promise.data.saved) {
+        setBtnStatus(prev => ({
+          ...prev,
+          "regularBookMark": false,
+          "solidBookMark": true,
+        }));
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -109,46 +107,48 @@ const SaveBtn = ({ userId, recipeId, setBtnStatus }) => {
       title="save recipe"
       onClick={saveRecipe}
     >
-      {loading ?
-        <RotatingLines
-          strokeColor="gray"
-          strokeWidth="5"
-          animationDuration="0.75"
-          width="20"
-          visible={true}
-        />
-        : <i className="fa-regular fa-bookmark"></i>}
+      {
+        loading ?
+          <RotatingLines
+            strokeColor="gray"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="20"
+            visible={true}
+          />
+          : <i className="fa-regular fa-bookmark"></i>
+      }
     </button>
   )
 }
 
 const UnSaveBtn = ({ userId, recipeId, setBtnStatus }) => {
-  const { user, setUser } = useContext(portfolioContext) || {};
   const [loading, setLoading] = useState(false);
+  const { user, setUser } = useContext(PortfolioContext) || {};
 
   const unSaveRecipe = async () => {
-    setLoading(true);
-    await axios.post(`${serverUrl}/recipes/unSaveRecipe`, {
-      userId: userId,
-      recipeId: recipeId
-    })
-      .then(res => {
-        const { unSaved } = res.data;
-        if (unSaved) {
-          setBtnStatus(prev => ({
-            ...prev,
-            "regularBookMark": true,
-            "solidBookMark": false,
-          }));
-          if (user?._id) {
-            const savedRecipes = user.savedRecipes.filter(recipe =>
-              recipe._id != recipeId);
-            setUser(prev => ({ ...prev, "savedRecipes": savedRecipes }))
-          }
+    try {
+      setLoading(true);
+      const promise = await axios.post(`${serverUrl}/recipes/unSaveRecipe`, {
+        userId: userId,
+        recipeId: recipeId
+      });
+      if (promise.data.unSaved) {
+        setBtnStatus(prev => ({
+          ...prev,
+          "regularBookMark": true,
+          "solidBookMark": false,
+        }));
+        if (user?._id) {
+          const savedRecipes = user.savedRecipes.filter(recipe =>
+            recipe._id != recipeId);
+          setUser(prev => ({ ...prev, "savedRecipes": savedRecipes }));
         }
-      })
-      .catch(error => console.log(error));
-    setLoading(false);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -156,42 +156,50 @@ const UnSaveBtn = ({ userId, recipeId, setBtnStatus }) => {
       disabled={loading}
       style={loading ? { opacity: ".5", cursor: "revert" } : {}}
       className={style.unSave_btn}
-      title="unSave recipe"
+      title="unsave recipe"
       onClick={unSaveRecipe}
     >
-      {loading ?
-        <RotatingLines
-          strokeColor="gray"
-          strokeWidth="5"
-          animationDuration="0.75"
-          width="20"
-          visible={true}
-        />
-        : <i className="fa-solid fa-bookmark"></i>}
+      {
+        loading ?
+          <RotatingLines
+            strokeColor="gray"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="20"
+            visible={true}
+          />
+          : <i className="fa-solid fa-bookmark"></i>
+      }
     </button>
   )
 }
 
 const RemoveBtn = ({ userId, recipeId }) => {
-  const { user, setUser } = useContext(portfolioContext) || {};
+  const { user, setUser } = useContext(PortfolioContext) || {};
   const [loading, setLoading] = useState(false);
 
   const removeCreatedRecipe = async () => {
-    setLoading(true);
-    await axios.post(`${serverUrl}/recipes/removeCreatedRecipe`, {
-      userId: userId,
-      recipeId: recipeId
-    })
-      .then(res => {
-        const { removed } = res.data;
-        if (removed && user?._id) {
-          const createdRecipes = user.createdRecipes.filter(recipe =>
-            recipe._id != recipeId);
-          setUser(prev => ({ ...prev, "createdRecipes": createdRecipes }))
-        }
+    try {
+      setLoading(true);
+      const promise = await axios.post(`${serverUrl}/recipes/removeCreatedRecipe`, {
+        userId: userId,
+        recipeId: recipeId
       })
-      .catch(error => console.log(error));
-    setLoading(false);
+      if (promise.data.removed && user?._id) {
+        const createdRecipes = user.createdRecipes.filter(recipe =>
+          recipe._id != recipeId);
+        const savedRecipes = user.savedRecipes.filter(recipe =>
+          recipe._id != recipeId);
+        setUser(prev => ({
+          ...prev,
+          "createdRecipes": createdRecipes,
+          "savedRecipes": savedRecipes
+        }));
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -201,15 +209,17 @@ const RemoveBtn = ({ userId, recipeId }) => {
       title="remove created recipe"
       onClick={removeCreatedRecipe}
     >
-      {loading ?
-        <RotatingLines
-          strokeColor="gray"
-          strokeWidth="5"
-          animationDuration="0.75"
-          width="20"
-          visible={true}
-        />
-        : <i className="fa-solid fa-trash"></i>}
+      {
+        loading ?
+          <RotatingLines
+            strokeColor="gray"
+            strokeWidth="5"
+            animationDuration="0.75"
+            width="20"
+            visible={true}
+          />
+          : <i className="fa-solid fa-trash"></i>
+      }
     </button>
   )
 }

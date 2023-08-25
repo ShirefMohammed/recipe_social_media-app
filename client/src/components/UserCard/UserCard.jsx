@@ -17,7 +17,7 @@ const UserCard = ({ user }) => {
         alt="user picture"
       />
 
-      <Link to="/userPortfolio" className={style.name}>
+      <Link to={`/users/${user._id}`} className={style.name}>
         {user.name}
       </Link>
 
