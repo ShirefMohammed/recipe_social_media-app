@@ -1,6 +1,6 @@
 export default function GetServerUrl() {
   // // development
-  // return "http://localhost:5173";
+  // return "http://localhost:3001";
 
   // vercel
   return "https://recipe-social-media-app-api.vercel.com";
