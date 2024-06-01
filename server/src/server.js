@@ -22,18 +22,18 @@ app.use("/recipes", recipesRouter);
 app.get("/", async (req, res) => res.send("home page"));
 
 // Ping the server every 14 minutes to refresh on render platform
-setInterval(() => {
-  fetch(process.env.SERVER_URL)
-    .then((res) => {
-      if (res.ok) {
-        console.log("Server ping successful");
-      } else {
-        console.error("Server ping failed:", res.status);
-      }
-    })
-    .catch((error) => {
-      console.error("Error pinging server:", error);
-    });
-}, 840000);
+// setInterval(() => {
+//   fetch(process.env.SERVER_URL)
+//     .then((res) => {
+//       if (res.ok) {
+//         console.log("Server ping successful");
+//       } else {
+//         console.error("Server ping failed:", res.status);
+//       }
+//     })
+//     .catch((error) => {
+//       console.error("Error pinging server:", error);
+//     });
+// }, 840000);
 
 app.listen(_PORT, () => console.log(`SERVER WORK GOOD ON PORT ${_PORT}`));
