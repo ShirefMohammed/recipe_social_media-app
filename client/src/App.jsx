@@ -2,7 +2,7 @@ import { createContext, useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import { GetServerUrl, ScrollToTop } from "./hooks";
-import { Header, Footer } from "./components";
+import { Header, Footer, FirstReqLoadingMsg } from "./components";
 import {
   Home,
   Authentication,
@@ -11,10 +11,10 @@ import {
   Recipe,
   UserProfile,
   SearchResults,
-  NoPage
+  NoPage,
 } from "./pages";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const serverUrl = GetServerUrl();
@@ -39,7 +39,9 @@ function App() {
     const fetchUser = async () => {
       try {
         if (userId) {
-          const response = await axios.get(`${serverUrl}/users/getUser/userId/${userId}`);
+          const response = await axios.get(
+            `${serverUrl}/users/getUser/userId/${userId}`
+          );
           setUser(response.data.user);
         } else {
           setUser({});
@@ -53,58 +55,39 @@ function App() {
   }, [userId]);
 
   return (
-    <AppContext.Provider value={{
-      cookies,
-      setCookies,
-      userId,
-      setUserId,
-      user,
-      setUser
-    }}>
+    <AppContext.Provider
+      value={{
+        cookies,
+        setCookies,
+        userId,
+        setUserId,
+        user,
+        setUser,
+      }}
+    >
       <BrowserRouter>
         <div className="app">
           <Header />
 
           <Routes>
-            <Route
-              path='/'
-              element={<Home />}
-            />
+            <Route path="/" element={<Home />} />
 
             <Route
               path="/authentication/:authType"
               element={<Authentication />}
             />
 
-            <Route
-              path="/userPortfolio"
-              element={<UserPortfolio />}
-            />
+            <Route path="/userPortfolio" element={<UserPortfolio />} />
 
-            <Route
-              path="/recipes/createRecipe"
-              element={<CreateRecipe />}
-            />
+            <Route path="/recipes/createRecipe" element={<CreateRecipe />} />
 
-            <Route
-              path="/recipes/:recipeId"
-              element={<Recipe />}
-            />
+            <Route path="/recipes/:recipeId" element={<Recipe />} />
 
-            <Route
-              path="/users/:userId"
-              element={<UserProfile />}
-            />
+            <Route path="/users/:userId" element={<UserProfile />} />
 
-            <Route
-              path="/searchResults"
-              element={<SearchResults />}
-            />
+            <Route path="/searchResults" element={<SearchResults />} />
 
-            <Route
-              path="*"
-              element={<NoPage />}
-            />
+            <Route path="*" element={<NoPage />} />
           </Routes>
 
           <Footer />
@@ -112,6 +95,9 @@ function App() {
 
         {/* scroll to (0, 0) when path changes */}
         <ScrollToTop />
+
+        {/* Server First Request Loading Message */}
+        <FirstReqLoadingMsg />
 
         {/* ToastContainer */}
         <ToastContainer
@@ -128,7 +114,7 @@ function App() {
         />
       </BrowserRouter>
     </AppContext.Provider>
-  )
+  );
 }
 
-export default App
+export default App;
